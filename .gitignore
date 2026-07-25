@@ -1,0 +1,12 @@
+# Stage Sheets — .gitignore
+
+# Data file lives on OneDrive, not in the repo
+stagesheets-data.json
+*.json
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+*.code-workspace
