@@ -1283,21 +1283,21 @@ function renderEditor(s){
   wireToolbar(s);
   const upd=()=>{$("ugEdit").href=ugUrl($("fTitle").value,$("fArtist").value);};
   // resizer drag
-  // resizer drag — full-screen overlay prevents preview content from interfering
+  // resizer drag — delta based, overlay captures all events
   const resizer=$("edResizer"), mid=$("edMid");
   if(resizer&&mid){
     resizer.onmousedown=e=>{
       e.preventDefault();
-      // Create a transparent full-screen overlay that captures all mouse events
       const overlay=document.createElement("div");
       overlay.style.cssText="position:fixed;inset:0;z-index:9999;cursor:col-resize";
       document.body.appendChild(overlay);
       resizer.classList.add("dragging");
-      // Snapshot the grid rect now — before anything moves
-      const rect=mid.getBoundingClientRect();
+      const startX=e.clientX;
+      const startSplit=previewSplit;
+      const midW=mid.getBoundingClientRect().width||mid.offsetWidth||800;
       overlay.onmousemove=ev=>{
-        const pct=((ev.clientX-rect.left)/rect.width)*100;
-        const clamped=Math.max(15,Math.min(85,pct));
+        const deltaPct=((ev.clientX-startX)/midW)*100;
+        const clamped=Math.max(15,Math.min(85,startSplit+deltaPct));
         previewSplit=Math.round(clamped);
         mid.style.gridTemplateColumns=`${previewSplit}fr 12px ${100-previewSplit}fr`;
         scalePreview();
