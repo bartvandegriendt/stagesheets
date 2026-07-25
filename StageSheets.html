@@ -120,9 +120,9 @@
   .ed{flex:1;display:flex;flex-direction:column;gap:0;min-height:0;animation:fadeUp .3s ease both}
   .ed-top{flex:0 0 auto;padding:14px 20px 10px;display:flex;flex-direction:column;gap:10px;overflow:visible}
   .ed-mid{flex:1;display:grid;gap:0;min-height:0;padding:0 20px}
-  .ed-resizer{width:8px;cursor:col-resize;flex:0 0 8px;background:transparent;position:relative;z-index:1}
-  .ed-resizer::after{content:"";position:absolute;left:3px;top:10%;bottom:10%;width:2px;background:var(--line);border-radius:2px;transition:background .15s}
-  .ed-resizer:hover::after,.ed-resizer.dragging::after{background:var(--amber-dim)}
+  .ed-resizer{width:12px;cursor:col-resize;flex:0 0 12px;background:transparent;position:relative;z-index:5;touch-action:none}
+  .ed-resizer::after{content:"";position:absolute;left:5px;top:5%;bottom:5%;width:2px;background:var(--line);border-radius:2px;transition:background .15s,width .15s,left .15s}
+  .ed-resizer:hover::after,.ed-resizer.dragging::after{background:var(--amber);width:4px;left:4px}
   .ed-mid-left{display:flex;flex-direction:column;gap:6px;min-height:0}
   .ed-mid-left textarea{flex:1;resize:none;min-height:160px}
   .ed-preview-col{display:flex;flex-direction:column;gap:6px;min-height:0}
@@ -526,7 +526,7 @@ function renderBody(text,s,f){
 /* ═══════════════════════════════════════════════════════════════
    STATE — variables, persist, load, helpers
    ═══════════════════════════════════════════════════════════════ */
-let songs=[], setlists=[], folders=[], theme="dark", printTheme="light", printMargin="normal", printPadding="normal", pdfOrder="artist-title", pageSize="A4", pageSizeCustomW=210, pageSizeCustomH=297, previewSplit=50, previewZoom=0;
+let songs=[], setlists=[], folders=[], theme="dark", printTheme="light", printMargin="normal", printPadding="normal", pdfOrder="artist-title", pageSize="A4", pageSizeCustomW=210, pageSizeCustomH=297, previewSplit=50, previewZoom=0, showPreview=true;
 let tab="songs", openSetId=null, picking=false;
 let context={type:"library",setId:null};
 let currentId=null, view="perform", defaultView="perform";
@@ -541,12 +541,12 @@ const setById=id=>setlists.find(s=>s.id===id);
 const folderById=id=>folders.find(f=>f.id===id);
 const ugUrl=(t,a)=>"https://www.ultimate-guitar.com/search.php?search_type=title&value="+encodeURIComponent([t||"",a||""].filter(Boolean).join(" "));
 function persist(){ DB.save(buildPayload()); }
-function buildPayload(){ return {songs,setlists,folders,theme,printTheme,printMargin,printPadding,pdfOrder,pageSize,pageSizeCustomW,pageSizeCustomH,previewSplit,previewZoom,defaultView,saved:new Date().toISOString()}; }
+function buildPayload(){ return {songs,setlists,folders,theme,printTheme,printMargin,printPadding,pdfOrder,pageSize,pageSizeCustomW,pageSizeCustomH,previewSplit,previewZoom,showPreview,defaultView,saved:new Date().toISOString()}; }
 function loadFromData(d){
   songs=d.songs||[]; setlists=d.setlists||[]; folders=d.folders||[];
   theme=d.theme||"dark"; printTheme=d.printTheme||"light";
   printMargin=d.printMargin||"normal"; printPadding=d.printPadding||"normal"; pdfOrder=d.pdfOrder||"artist-title";
-  pageSize=d.pageSize||"A4"; pageSizeCustomW=d.pageSizeCustomW||210; pageSizeCustomH=d.pageSizeCustomH||297; previewSplit=d.previewSplit||50; previewZoom=d.previewZoom||0; defaultView=d.defaultView||"perform";
+  pageSize=d.pageSize||"A4"; pageSizeCustomW=d.pageSizeCustomW||210; pageSizeCustomH=d.pageSizeCustomH||297; previewSplit=d.previewSplit||50; previewZoom=d.previewZoom||0; showPreview=d.showPreview!==false; defaultView=d.defaultView||"perform";
   currentId=songs.filter(s=>!s.archived)[0]?.id||null;
   context={type:"library",setId:null}; transpose=0;
   tab="songs"; openSetId=null; filter=""; collapsedFolders=new Set();
@@ -1182,9 +1182,20 @@ function renderEditor(s){
     </div>
 
     <!-- MID: chords + preview (fills remaining space) -->
-    <div class="ed-mid" id="edMid" style="grid-template-columns:${previewSplit}fr 8px ${100-previewSplit}fr">
+    <div class="ed-mid" id="edMid" style="grid-template-columns:${showPreview?previewSplit+'fr 12px '+(100-previewSplit)+'fr':'1fr'}">
       <div class="ed-mid-left">
-        <label style="color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.1em">Chords &amp; formatting</label>
+        <label style="color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.1em;display:flex;align-items:center;gap:10px">
+          Chords &amp; formatting
+          <span style="margin-left:auto;display:flex;align-items:center;gap:7px;font-size:11px;letter-spacing:.06em">
+            Preview
+            <label class="view-toggle" title="Show/hide preview" style="margin:0">
+              <span class="switch" id="previewToggleSwitch">
+                <input type="checkbox" id="previewToggleChk" ${showPreview?"checked":""}>
+                <span class="slider"></span>
+              </span>
+            </label>
+          </span>
+        </label>
         <div class="fmtbar">
           <button data-h="1">H1</button><button data-h="2">H2</button><button data-h="3">H3</button><button data-h="0">Body</button>
           <span class="sep"></span>
@@ -1206,8 +1217,8 @@ function renderEditor(s){
         </div>
         <textarea id="fChords" placeholder="# Section heading&#10;[Verse]&#10;A            E&#10;Placeholder lyric line...">${esc(s.chords||"")}</textarea>
       </div>
-      <div class="ed-resizer" id="edResizer" title="Drag to resize"></div>
-      <div class="ed-preview-col">
+      <div class="ed-resizer" id="edResizer" style="${showPreview?'':'display:none'}" title="Drag to resize"></div>
+      <div class="ed-preview-col" id="edPreviewCol" style="${showPreview?'':'display:none'}">
         <div class="ed-preview-label">
           Preview <span id="previewSizeLabel">${sheetSize}px</span> · <span id="previewPageLabel" style="color:var(--muted)">${pageSize==="Custom"?pageSizeCustomW+"×"+pageSizeCustomH+" mm":PAGE_SIZES[pageSize]?.label||pageSize}</span>
           <span style="margin-left:auto;display:flex;align-items:center;gap:4px">
@@ -1272,27 +1283,45 @@ function renderEditor(s){
   wireToolbar(s);
   const upd=()=>{$("ugEdit").href=ugUrl($("fTitle").value,$("fArtist").value);};
   // resizer drag
+  // resizer drag — full-screen overlay prevents preview content from interfering
   const resizer=$("edResizer"), mid=$("edMid");
   if(resizer&&mid){
     resizer.onmousedown=e=>{
-      e.preventDefault(); resizer.classList.add("dragging");
-      const startX=e.clientX, rect=mid.getBoundingClientRect(), totalW=rect.width;
-      const onmove=ev=>{
-        const dx=ev.clientX-startX;
-        const leftW=((rect.left-rect.left+ev.clientX-rect.left)/totalW)*100;
-        const clamped=Math.max(20,Math.min(80,leftW));
+      e.preventDefault();
+      // Create a transparent full-screen overlay that captures all mouse events
+      const overlay=document.createElement("div");
+      overlay.style.cssText="position:fixed;inset:0;z-index:9999;cursor:col-resize";
+      document.body.appendChild(overlay);
+      resizer.classList.add("dragging");
+      // Snapshot the grid rect now — before anything moves
+      const rect=mid.getBoundingClientRect();
+      overlay.onmousemove=ev=>{
+        const pct=((ev.clientX-rect.left)/rect.width)*100;
+        const clamped=Math.max(15,Math.min(85,pct));
         previewSplit=Math.round(clamped);
-        mid.style.gridTemplateColumns=`${previewSplit}fr 8px ${100-previewSplit}fr`;
+        mid.style.gridTemplateColumns=`${previewSplit}fr 12px ${100-previewSplit}fr`;
         scalePreview();
       };
-      const onup=()=>{
+      const stop=()=>{
+        overlay.remove();
         resizer.classList.remove("dragging");
-        document.removeEventListener("mousemove",onmove);
-        document.removeEventListener("mouseup",onup);
         persist();
       };
-      document.addEventListener("mousemove",onmove);
-      document.addEventListener("mouseup",onup);
+      overlay.onmouseup=stop;
+      overlay.onmouseleave=stop;
+    };
+  }
+  // preview toggle
+  const prevToggle=$("previewToggleChk");
+  if(prevToggle){
+    prevToggle.onchange=()=>{
+      showPreview=prevToggle.checked;
+      const col=$("edPreviewCol"), res=$("edResizer");
+      if(col) col.style.display=showPreview?"":"none";
+      if(res) res.style.display=showPreview?"":"none";
+      mid.style.gridTemplateColumns=showPreview?`${previewSplit}fr 12px ${100-previewSplit}fr`:"1fr";
+      if(showPreview) setTimeout(scalePreview,50);
+      persist();
     };
   }
   // page size wiring
@@ -1646,7 +1675,7 @@ document.addEventListener("keydown",e=>{const tag=(e.target.tagName||"").toLower
     case "]":sheetSize=Math.min(42,sheetSize+1);renderMain();break; case "[":sheetSize=Math.max(11,sheetSize-1);renderMain();break;
   }});
 
-(async function init(){const d=await DB.load();if(d){songs=d.songs||[];setlists=d.setlists||[];folders=d.folders||[];theme=d.theme||"dark";printTheme=d.printTheme||"light";printMargin=d.printMargin||"normal";printPadding=d.printPadding||"normal";pdfOrder=d.pdfOrder||"artist-title";pageSize=d.pageSize||"A4";pageSizeCustomW=d.pageSizeCustomW||210;pageSizeCustomH=d.pageSizeCustomH||297;previewSplit=d.previewSplit||50;previewZoom=d.previewZoom||0;defaultView=d.defaultView||"perform";}
+(async function init(){const d=await DB.load();if(d){songs=d.songs||[];setlists=d.setlists||[];folders=d.folders||[];theme=d.theme||"dark";printTheme=d.printTheme||"light";printMargin=d.printMargin||"normal";printPadding=d.printPadding||"normal";pdfOrder=d.pdfOrder||"artist-title";pageSize=d.pageSize||"A4";pageSizeCustomW=d.pageSizeCustomW||210;pageSizeCustomH=d.pageSizeCustomH||297;previewSplit=d.previewSplit||50;previewZoom=d.previewZoom||0;showPreview=d.showPreview!==false;defaultView=d.defaultView||"perform";}
   if(!songs.length){songs=[{id:uid(),title:"Demo — delete me",artist:"How it renders",key:"C",capo:"0",tempo:"100",transpose:0,
     chords:"# Part One\n[Intro]\nC        G        Am       F\n\n[Verse]\nC                 G\nThis is a placeholder lyric line\nAm                F\nchords sit right above the words\n\n## A louder section\n[Chorus]\nF     G      C        Am\n{red:watch the modulation here}\nF     G      C\npaste real chords over this",updated:Date.now()}];}
   currentId=songs[0].id;
