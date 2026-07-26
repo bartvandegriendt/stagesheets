@@ -4,6 +4,20 @@ A self-contained, offline-capable chord sheet and setlist manager built for live
 
 ---
 
+## Screenshots
+
+### Song library & perform view
+![Song library with folders and perform view](screenshots/library-perform.svg)
+
+*Songs organised in folders and subfolders. The perform view renders the song as a physical page card — correct paper size, dark theme, coloured chords.*
+
+### Editor with live preview
+![Editor with split pane and live page preview](screenshots/editor-preview.svg)
+
+*Split-pane editor: raw chord text on the left, live formatted page preview on the right. Drag the divider to resize. The preview matches the selected paper size and print settings exactly.*
+
+---
+
 ## Features
 
 ### Library

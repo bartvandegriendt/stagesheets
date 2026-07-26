@@ -1,0 +1,86 @@
+<svg viewBox="0 0 900 560" xmlns="http://www.w3.org/2000/svg" font-family="system-ui,sans-serif">
+  <rect width="900" height="560" fill="#15130f"/>
+  <rect width="900" height="56" fill="#1c1914"/>
+  <rect width="900" height="1" y="56" fill="#352e23"/>
+  <circle cx="22" cy="28" r="7" fill="#f3b34c"/>
+  <text x="38" y="34" font-size="22" font-weight="700" fill="#ece4d3" letter-spacing="2" font-family="Georgia,serif">STAGE SHEETS</text>
+  <text x="38" y="48" font-size="10" fill="#90876f" letter-spacing="1">SONGS &amp; SETLISTS  </text>
+  <text x="163" y="48" font-size="10" fill="#f3b34c" opacity=".5" letter-spacing="1">v3.2.2</text>
+  <rect width="900" height="36" y="57" fill="#15130f"/>
+  <rect width="900" height="1" y="93" fill="#352e23"/>
+  <circle cx="18" cy="75" r="5" fill="#5fb56b"/>
+  <text x="30" y="79" font-size="12" fill="#90876f" font-family="monospace">Saved at 13:00</text>
+  <rect x="680" y="62" width="80" height="24" rx="7" fill="#252019" stroke="#352e23" stroke-width="1"/>
+  <text x="720" y="78" font-size="11" fill="#90876f" text-anchor="middle">📂 Open…</text>
+  <rect x="766" y="62" width="80" height="24" rx="7" fill="#252019" stroke="#352e23" stroke-width="1"/>
+  <text x="806" y="78" font-size="11" fill="#90876f" text-anchor="middle">💾 Save as…</text>
+  <!-- sidebar -->
+  <rect width="260" height="467" y="93" fill="#1c1914"/>
+  <rect width="1" height="467" x="260" y="93" fill="#352e23"/>
+  <rect width="260" height="44" y="93" fill="#1c1914"/>
+  <rect width="260" height="1" y="137" fill="#352e23"/>
+  <text x="65" y="120" font-size="14" font-weight="600" fill="#f3b34c" text-anchor="middle" letter-spacing="1">SONGS</text>
+  <rect x="0" y="136" width="130" height="2" fill="#f3b34c"/>
+  <text x="195" y="120" font-size="14" font-weight="600" fill="#90876f" text-anchor="middle" letter-spacing="1">SETS</text>
+  <rect x="10" y="147" width="200" height="32" rx="9" fill="#15130f" stroke="#352e23" stroke-width="1"/>
+  <text x="22" y="167" font-size="13" fill="#90876f">Search songs…</text>
+  <rect x="218" y="147" width="36" height="32" rx="9" fill="#f3b34c"/>
+  <text x="236" y="168" font-size="20" fill="#1a1408" text-anchor="middle" font-weight="700">+</text>
+  <rect width="260" height="34" y="186" fill="#1c1914"/>
+  <rect width="260" height="1" y="220" fill="#352e23"/>
+  <text x="12" y="208" font-size="10" fill="#90876f" letter-spacing=".5">SORT</text>
+  <rect x="42" y="193" width="44" height="22" rx="7" fill="#252019" stroke="#c9923a" stroke-width="1"/>
+  <text x="64" y="208" font-size="11" fill="#f3b34c" text-anchor="middle">Title</text>
+  <text x="100" y="208" font-size="11" fill="#90876f">Artist</text>
+  <text x="138" y="208" font-size="11" fill="#90876f">Date</text>
+  <rect x="8" y="228" width="244" height="30" rx="8" fill="#252019" stroke="#c9923a" stroke-width="1"/>
+  <rect x="8" y="228" width="3" height="30" rx="2" fill="#f3b34c"/>
+  <text x="22" y="248" font-size="11" fill="#90876f">⠿</text>
+  <text x="50" y="248" font-size="13" fill="#ece4d3">📁</text>
+  <text x="68" y="249" font-size="13" font-weight="600" fill="#ece4d3">Sander Bekkers</text>
+  <text x="228" y="249" font-size="11" fill="#90876f" text-anchor="middle">16</text>
+  <rect x="22" y="265" width="230" height="82" fill="rgba(0,0,0,.12)"/>
+  <rect x="22" y="265" width="2" height="82" fill="#352e23"/>
+  <text x="38" y="287" font-size="12" fill="#90876f">📂</text>
+  <text x="56" y="287" font-size="12" font-weight="600" fill="#90876f">Vol. 1</text>
+  <text x="50" y="313" font-size="13" font-weight="600" fill="#90876f">Thunderstruck</text>
+  <text x="50" y="325" font-size="11" fill="#6e6e6e">AC/DC</text>
+  <text x="16" y="370" font-size="13" font-weight="600" fill="#ece4d3">Born This Way</text>
+  <text x="16" y="382" font-size="11" fill="#90876f">Lady Gaga</text>
+  <rect x="8" y="386" width="244" height="30" rx="8" fill="#252019" stroke="#c9923a" stroke-width="1"/>
+  <rect x="8" y="386" width="3" height="30" rx="2" fill="#f3b34c"/>
+  <text x="16" y="406" font-size="13" font-weight="600" fill="#ece4d3">Imsomnia</text>
+  <text x="16" y="437" font-size="13" font-weight="600" fill="#ece4d3">Lola Montez</text>
+  <text x="16" y="448" font-size="11" fill="#90876f">Volbeat</text>
+  <text x="16" y="467" font-size="13" font-weight="600" fill="#ece4d3">Proud Mary</text>
+  <text x="16" y="478" font-size="11" fill="#90876f">Ike &amp; Tina Turner</text>
+  <!-- toolbar -->
+  <rect x="261" y="93" width="639" height="48" fill="#1c1914"/>
+  <rect x="261" y="141" width="639" height="1" fill="#352e23"/>
+  <rect x="272" y="105" width="70" height="28" rx="9" fill="#15130f" stroke="#352e23" stroke-width="1"/>
+  <text x="307" y="123" font-size="12" fill="#f3b34c" text-anchor="middle">Perform</text>
+  <rect x="348" y="105" width="40" height="28" rx="7" fill="#252019" stroke="#352e23" stroke-width="1"/>
+  <text x="368" y="123" font-size="12" fill="#90876f" text-anchor="middle">Edit</text>
+  <rect x="400" y="105" width="110" height="28" rx="9" fill="#15130f" stroke="#352e23" stroke-width="1"/>
+  <text x="410" y="123" font-size="10" fill="#90876f">KEY</text>
+  <text x="450" y="123" font-size="13" fill="#f3b34c" text-anchor="middle">0</text>
+  <rect x="522" y="105" width="90" height="28" rx="9" fill="#15130f" stroke="#352e23" stroke-width="1"/>
+  <text x="532" y="123" font-size="10" fill="#90876f">SIZE</text>
+  <text x="562" y="123" font-size="13" fill="#f3b34c" text-anchor="middle">18</text>
+  <!-- desk + page -->
+  <rect x="261" y="142" width="639" height="418" fill="#252019"/>
+  <rect x="320" y="165" width="520" height="370" rx="2" fill="#1c1914"/>
+  <rect x="320" y="165" width="520" height="370" rx="2" fill="none" stroke="#352e23" stroke-width="1"/>
+  <text x="345" y="215" font-size="32" font-weight="700" fill="#ece4d3" font-family="Georgia,serif">Imsomnia</text>
+  <text x="345" y="238" font-size="15" fill="#74b9c6" font-weight="600">—</text>
+  <text x="345" y="258" font-size="11" fill="#90876f" font-family="monospace">Key: A  ·  Capo: 2  ·  Tempo: 100 bpm</text>
+  <defs><linearGradient id="rg" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#c9923a"/><stop offset="1" stop-color="#c9923a" stop-opacity="0"/></linearGradient></defs>
+  <rect x="345" y="268" width="460" height="1" fill="url(#rg)"/>
+  <text x="345" y="295" font-size="14" fill="#74b9c6" font-weight="700" font-family="monospace">[Intro]</text>
+  <text x="345" y="315" font-size="14" fill="#ece4d3" font-family="monospace"><tspan fill="#f3b34c" font-weight="700">B/D#</tspan>    <tspan fill="#f3b34c" font-weight="700">Bm/D</tspan>    <tspan fill="#f3b34c" font-weight="700">F#sus4</tspan>   <tspan fill="#f3b34c" font-weight="700">Bm</tspan></text>
+  <text x="345" y="340" font-size="14" fill="#74b9c6" font-weight="700" font-family="monospace">[Verse]</text>
+  <text x="345" y="360" font-size="14" fill="#f3b34c" font-weight="700" font-family="monospace">G#</text>
+  <text x="345" y="378" font-size="14" fill="#ece4d3" font-family="monospace">Main Riff</text>
+  <text x="345" y="396" font-size="14" fill="#ece4d3" font-family="monospace"><tspan fill="#f3b34c" font-weight="700">Bmsus4</tspan> - <tspan fill="#f3b34c" font-weight="700">Bmsus2</tspan> variaties</text>
+  <text x="345" y="414" font-size="14" fill="#ece4d3" font-family="monospace">2x omlaag / 2x omhoog</text>
+</svg>
