@@ -24,7 +24,7 @@
   <text x="14" y="217" font-size="10" fill="#90876f">Lady Gaga</text>
   <rect x="8" y="218" width="164" height="26" rx="8" fill="#252019" stroke="#c9923a" stroke-width="1"/>
   <rect x="8" y="218" width="3" height="26" rx="2" fill="#f3b34c"/>
-  <text x="14" y="235" font-size="12" font-weight="600" fill="#ece4d3">Imsomnia</text>
+  <text x="14" y="235" font-size="12" font-weight="600" fill="#ece4d3">Insomnia</text>
   <text x="14" y="264" font-size="12" font-weight="600" fill="#ece4d3">Lola Montez</text>
   <text x="14" y="276" font-size="10" fill="#90876f">Volbeat</text>
   <text x="14" y="294" font-size="12" font-weight="600" fill="#ece4d3">Proud Mary</text>
@@ -47,7 +47,7 @@
   <rect x="181" y="224" width="719" height="1" fill="#352e23"/>
   <rect x="196" y="150" width="340" height="30" rx="9" fill="#1c1914" stroke="#352e23" stroke-width="1"/>
   <text x="204" y="158" font-size="9" fill="#90876f" letter-spacing=".5">SONG TITLE</text>
-  <text x="204" y="174" font-size="14" fill="#ece4d3">Imsomnia</text>
+  <text x="204" y="174" font-size="14" fill="#ece4d3">Insomnia</text>
   <rect x="546" y="150" width="340" height="30" rx="9" fill="#1c1914" stroke="#352e23" stroke-width="1"/>
   <text x="554" y="158" font-size="9" fill="#90876f" letter-spacing=".5">ARTIST</text>
   <text x="554" y="174" font-size="14" fill="#90876f">e.g. Toto</text>
@@ -105,7 +105,7 @@
   <text x="879" y="243" font-size="12" fill="#ece4d3" text-anchor="middle">+</text>
   <!-- page preview card -->
   <rect x="604" y="248" width="276" height="225" rx="2" fill="#1c1914" stroke="#352e23" stroke-width=".5"/>
-  <text x="618" y="274" font-size="17" font-weight="700" fill="#ece4d3" font-family="Georgia,serif">Imsomnia</text>
+  <text x="618" y="274" font-size="17" font-weight="700" fill="#ece4d3" font-family="Georgia,serif">Insomnia</text>
   <text x="618" y="290" font-size="12" fill="#74b9c6" font-style="italic" font-family="monospace">Atmos/Pad Sound</text>
   <text x="618" y="307" font-size="12" fill="#ece4d3" font-family="monospace">| <tspan fill="#f3b34c" font-weight="700">B/D#</tspan> | <tspan fill="#f3b34c" font-weight="700">Bm/D</tspan> |</text>
   <text x="618" y="323" font-size="12" fill="#ece4d3" font-family="monospace">Main Riff</text>

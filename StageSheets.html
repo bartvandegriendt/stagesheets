@@ -1370,6 +1370,7 @@ function renderEditor(s){
       +metaInfo(fakeS,transpose)
       +'<div class="rule" style="height:1px;background:linear-gradient(90deg,var(--amber-dim),transparent);margin:10px 0 14px"></div>';
     prev.innerHTML=header+renderBody(ta.value,transpose,flats);
+    const trVal=$("trVal"); if(trVal) trVal.textContent=transpose>0?"+"+transpose:transpose;
     scalePreview();
   }
   // also update header when meta fields change
@@ -1553,7 +1554,18 @@ function wireToolbar(s){
     }
   });
 }
-function setTranspose(v){transpose=Math.max(-11,Math.min(11,v));const s=songById(currentId);if(s){s.transpose=transpose;persist();}renderSidebar();renderMain();}
+function setTranspose(v){
+  transpose=Math.max(-11,Math.min(11,v));
+  const s=songById(currentId); if(s){s.transpose=transpose;persist();}
+  // update the key display without re-rendering the whole editor
+  const trVal=$("trVal"); if(trVal) trVal.textContent=transpose>0?"+"+transpose:transpose;
+  if(view==="edit"){
+    // only refresh preview and key info in the preview header
+    updatePreview();
+  } else {
+    renderSidebar(); renderMain();
+  }
+}
 
 /* ═══════════════════════════════════════════════════════════════
    NAVIGATION — openSong, addSong, step, setlists
