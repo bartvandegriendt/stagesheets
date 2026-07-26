@@ -1570,7 +1570,15 @@ function setTranspose(v){
 /* ═══════════════════════════════════════════════════════════════
    NAVIGATION — openSong, addSong, step, setlists
    ═══════════════════════════════════════════════════════════════ */
-function openSong(id,ctx){currentId=id;context=ctx||{type:"library",setId:null};const s=songById(id);transpose=s&&s.transpose?s.transpose:0;view=defaultView;renderSidebar();renderMain();if(window.innerWidth<=780){$("side").classList.add("hidden");const ov=$("sideOverlay");if(ov)ov.style.display="none";}}
+function openSong(id,ctx){
+  currentId=id; context=ctx||{type:"library",setId:null};
+  const s=songById(id); transpose=s&&s.transpose?s.transpose:0; view=defaultView;
+  const list=$("list"); const scrollTop=list?list.scrollTop:0;
+  renderSidebar();
+  const listAfter=$("list"); if(listAfter&&scrollTop) listAfter.scrollTop=scrollTop;
+  renderMain();
+  if(window.innerWidth<=780){$("side").classList.add("hidden");const ov=$("sideOverlay");if(ov)ov.style.display="none";}
+}
 function step(dir){if(context.type!=="setlist")return;const sl=setById(context.setId);if(!sl)return;const i=sl.songIds.indexOf(currentId);const j=i+dir;if(j<0||j>=sl.songIds.length)return;openSong(sl.songIds[j],context);const sc=$("scroll");if(sc)sc.scrollTop=0;}
 function addSong(){const s={id:uid(),title:"",artist:"",key:"",capo:"",tempo:"",chords:"",transpose:0,created:Date.now(),updated:Date.now()};songs.push(s);currentId=s.id;context={type:"library",setId:null};transpose=0;view="edit";persist();tab="songs";renderSidebar();renderMain();setTimeout(()=>{const t=$("fTitle");if(t)t.focus();},30);if(window.innerWidth<=780)$("side").classList.add("hidden");}
 
