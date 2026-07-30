@@ -579,7 +579,17 @@ function showCtx(e,items){
       const sub=document.createElement("div"); sub.className="ctx-sub"; sub.style.display="none";
       it.sub.forEach(si=>{if(si==="-"){const hr=document.createElement("hr");sub.appendChild(hr);return;}const sb=document.createElement("button");sb.textContent=si.label;sb.onclick=()=>{closeCtx();si.fn();};sub.appendChild(sb);});
       wrap.appendChild(btn); wrap.appendChild(sub);
-      btn.onmouseenter=()=>sub.style.display="block"; wrap.onmouseleave=()=>sub.style.display="none";
+      btn.onmouseenter=()=>{
+        sub.style.display="block";
+        sub.style.top="-5px"; sub.style.bottom="auto";
+        // flip upward if submenu overflows viewport bottom
+        const r=sub.getBoundingClientRect();
+        if(r.bottom>window.innerHeight-8){
+          sub.style.top="auto";
+          sub.style.bottom="-5px";
+        }
+      };
+      wrap.onmouseleave=()=>sub.style.display="none";
       m.appendChild(wrap); return;
     }
     const btn=document.createElement("button");
@@ -591,6 +601,7 @@ function showCtx(e,items){
   let x=e.clientX,y=e.clientY;
   if(x+r.width>vw) x=vw-r.width-6;
   if(y+r.height>vh) y=vh-r.height-6;
+  if(y<0) y=6;
   m.style.left=x+"px"; m.style.top=y+"px";
 }
 
@@ -818,21 +829,24 @@ function songCtxMenu(e,id){
 function folderCtxMenu(e,id){
   const f=folderById(id); if(!f) return;
   const depth=folderDepth(id);
-  const moveItems=depth<MAX_DEPTH?[
-    {label:"Move into folder",sub:[
+  showCtx(e,[
+    {label:"New song in this folder",fn:()=>{
+      const s={id:uid(),title:"",artist:"",key:"",capo:"",tempo:"",chords:"",transpose:0,folderId:id,created:Date.now(),updated:Date.now()};
+      songs.push(s); currentId=s.id; context={type:"library",setId:null}; transpose=0; view="edit";
+      persist(); tab="songs"; renderSidebar(); renderMain();
+      setTimeout(()=>{const t=$("fTitle");if(t)t.focus();},30);
+      if(window.innerWidth<=780) $("side").classList.add("hidden");
+    }},
+    "-",
+    {label:"Rename",fn:()=>{const n=prompt("Rename folder:",f.name);if(n&&n.trim()){f.name=n.trim();persist();renderSidebar();}}},
+    ...(depth<MAX_DEPTH?[{label:"New subfolder\u2026",fn:()=>addFolder(id)}]:[]),
+    ...(depth<MAX_DEPTH?["-",{label:"Move into folder",sub:[
       {label:"(Root level)",fn:()=>{f.parentId=undefined;persist();renderSidebar();}},
       ...folderMenuItems(undefined,id),
-    ]},
+    ]}]:[]),
     "-",
-  ]:[];
-  showCtx(e,[
-    {label:"Rename",fn:()=>{const n=prompt("Rename folder:",f.name);if(n&&n.trim()){f.name=n.trim();persist();renderSidebar();}}},
-    ...( depth<MAX_DEPTH?[{label:"New subfolder\u2026",fn:()=>addFolder(id)}]:[]),
-    "-",
-    ...moveItems,
     {label:"Delete folder (keep songs)",danger:true,fn:()=>{
       if(!confirm('Delete folder "'+f.name+'"? Songs and subfolders become unfiled.')) return;
-      // recurse: collect all descendant folder ids
       function collectIds(pid){const ids=[pid];folders.filter(x=>x.parentId===pid).forEach(x=>ids.push(...collectIds(x.id)));return ids;}
       const ids=new Set(collectIds(id));
       songs.forEach(s=>{if(ids.has(s.folderId))s.folderId=undefined;});
