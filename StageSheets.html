@@ -274,7 +274,6 @@
     .seg button{ padding:7px 10px; font-size:12px; }
   }
   /* overlay element */
-  .side-overlay{ display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:29; }
   @media (max-width:780px){
     .row{ min-height:52px; }
     .folder-hd{ min-height:44px; }
@@ -350,7 +349,6 @@
   </div>
 </div>
 
-<div class="side-overlay" id="sideOverlay"></div>
 <div class="wrap">
   <aside class="side" id="side">
     <div class="tabs"><button id="tabSongs">SONGS</button><button id="tabSets">SETS</button></div>
@@ -1575,7 +1573,7 @@ function openSong(id,ctx){
   renderSidebar();
   const listAfter=$("list"); if(listAfter&&scrollTop) listAfter.scrollTop=scrollTop;
   renderMain();
-  if(window.innerWidth<=780){$("side").classList.add("hidden");const ov=$("sideOverlay");if(ov)ov.style.display="none";}
+  if(window.innerWidth<=780) $("side").classList.add("hidden");
 }
 function step(dir){if(context.type!=="setlist")return;const sl=setById(context.setId);if(!sl)return;const i=sl.songIds.indexOf(currentId);const j=i+dir;if(j<0||j>=sl.songIds.length)return;openSong(sl.songIds[j],context);const sc=$("scroll");if(sc)sc.scrollTop=0;}
 function addSong(){const s={id:uid(),title:"",artist:"",key:"",capo:"",tempo:"",chords:"",transpose:0,created:Date.now(),updated:Date.now()};songs.push(s);currentId=s.id;context={type:"library",setId:null};transpose=0;view="edit";persist();tab="songs";renderSidebar();renderMain();setTimeout(()=>{const t=$("fTitle");if(t)t.focus();},30);if(window.innerWidth<=780)$("side").classList.add("hidden");}
@@ -1674,16 +1672,22 @@ $("tabSongs").onclick=()=>{tab="songs";renderSidebar();};
 $("tabSets").onclick=()=>{tab="sets";openSetId=null;renderSidebar();};
 $("themeBtn").onclick=()=>{theme=theme==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",theme);persist();};
 function toggleSidebar(){
-  const side=$("side"), overlay=$("sideOverlay");
-  const hidden=side.classList.toggle("hidden");
-  const isMobile=window.innerWidth<=780;
-  if(overlay) overlay.style.display=(!hidden&&isMobile)?"block":"none";
+  const side=$("side");
+  side.classList.toggle("hidden");
 }
+$("libToggle").onclick=e=>{e.stopPropagation();toggleSidebar();};
+// Close sidebar on mobile when clicking outside it
+document.addEventListener("click",e=>{
+  if(window.innerWidth>780) return;
+  const side=$("side");
+  if(side.classList.contains("hidden")) return;
+  if(!side.contains(e.target)&&e.target.id!=="libToggle"&&!e.target.closest("#libToggle")){
+    side.classList.add("hidden");
+  }
+});
+$("helpBtn").onclick=showHelp;
 const dvChk=$("defaultViewChk");
 if(dvChk){dvChk.checked=defaultView==="edit";dvChk.onchange=()=>{defaultView=dvChk.checked?"edit":"perform";persist();};}
-$("libToggle").onclick=toggleSidebar;
-$("sideOverlay").onclick=()=>{$("side").classList.add("hidden");$("sideOverlay").style.display="none";};
-$("helpBtn").onclick=showHelp;
 
 document.addEventListener("keydown",e=>{const tag=(e.target.tagName||"").toLowerCase();if(tag==="input"||tag==="textarea"||tag==="select")return;if(!$("main").querySelector(".toolbar"))return;
   switch(e.key){
