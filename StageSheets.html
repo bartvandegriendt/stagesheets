@@ -98,7 +98,7 @@
   .grow{flex:1}
   .scroll{flex:1;overflow:auto;min-height:0;padding:24px 24px 80px;background:var(--bg3)}
   .page-wrap{margin:0 auto;width:var(--page-w-px,794px);max-width:100%}
-  .sheet{background:var(--page-bg,var(--bg2));box-shadow:0 6px 32px rgba(0,0,0,.45);border-radius:2px;padding:var(--page-pad,24px);animation:fadeUp .34s ease both;min-height:var(--page-h-px,200px)}
+  .sheet{background:var(--page-bg,var(--bg2));box-shadow:0 6px 32px rgba(0,0,0,.45);border-radius:2px;padding:var(--page-pad-t,24px) var(--page-pad-r,24px) var(--page-pad-b,24px) var(--page-pad-l,24px);animation:fadeUp .34s ease both;min-height:var(--page-h-px,200px)}
   [data-theme="light"] .sheet{box-shadow:0 4px 20px rgba(0,0,0,.18)}
   @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
   .sheet h1.songtitle{font-family:"Bebas Neue";font-weight:400;font-size:clamp(34px,5vw,52px);letter-spacing:1.5px;margin:0;line-height:1}
@@ -132,7 +132,7 @@
   .ed-page{background:var(--bg2);box-shadow:0 4px 20px rgba(0,0,0,.4);transform-origin:top center;transition:transform .2s;flex:0 0 auto;overflow:hidden;position:relative}
   [data-theme="light"] .ed-page{box-shadow:0 4px 20px rgba(0,0,0,.2)}
   .ed-page .bodytext{font-size:var(--sheet);line-height:1.65;white-space:pre-wrap;word-break:break-word}
-  .ed-page-inner{padding:var(--prev-padding,8mm)}
+  .ed-page-inner{}
   .ed-foot{flex:0 0 auto;display:flex;flex-direction:column;position:relative}
   .ed-settings-panel{display:flex;flex-direction:column;gap:8px;padding:0 20px;background:var(--bg2);border-top:1px solid var(--line);overflow:hidden;max-height:0;transition:max-height .28s ease,padding .28s ease}
   .ed-settings-panel.open{max-height:500px;padding-top:12px;padding-bottom:12px}
@@ -287,7 +287,7 @@
   }
   .printset{display:none}
   @media print{
-    @page{ margin: var(--print-margin, 18mm); size: var(--print-page-w, 210mm) var(--print-page-h, 297mm); }
+    @page{ margin: var(--pm-top,18mm) var(--pm-right,18mm) var(--pm-bottom,18mm) var(--pm-left,18mm); size: var(--print-page-w, 210mm) var(--print-page-h, 297mm); }
     html[data-print-theme="light"]{
       --bg:#fff; --bg2:#fff; --bg3:#f4eddd; --bg4:#ece2cb; --line:#ddd3bd;
       --text:#241f16; --muted:#8a7e62; --amber:#a8631c; --amber-dim:#8a5417;
@@ -305,7 +305,7 @@
     .wrap,.main,.scroll{display:block;overflow:visible;height:auto}
     .scroll{padding:0!important;background:none!important}
     .page-wrap{width:100%!important;max-width:none!important}
-    .sheet{box-shadow:none!important;border-radius:0!important;padding:var(--print-padding,8mm)!important;min-height:0!important;background:var(--bg)!important}
+    .sheet{box-shadow:none!important;border-radius:0!important;padding:var(--print-padding,8mm) var(--print-padding,8mm) var(--print-padding,8mm) var(--print-padding,8mm)!important;min-height:0!important;background:var(--bg)!important}
     .sheet{animation:none}
     .rule{background:var(--amber-dim)}
     body.printing-set .scroll{display:none!important}
@@ -318,7 +318,7 @@
 <div class="top">
   <div>
     <div class="brand"><span class="dot"></span>STAGE SHEETS</div>
-    <div class="sub">songs &amp; setlists <span style="font-family:'JetBrains Mono';font-size:9px;opacity:.45;letter-spacing:.04em">v3.2.6</span></div>
+    <div class="sub">songs &amp; setlists <span style="font-family:'JetBrains Mono';font-size:9px;opacity:.45;letter-spacing:.04em">v3.3.0</span></div>
   </div>
   <div class="spacer"></div>
   <input type="file" id="importFile" accept=".json" style="display:none">
@@ -522,7 +522,7 @@ function renderBody(text,s,f){
 /* ═══════════════════════════════════════════════════════════════
    STATE — variables, persist, load, helpers
    ═══════════════════════════════════════════════════════════════ */
-let songs=[], setlists=[], folders=[], theme="dark", printTheme="light", printMargin="normal", printPadding="normal", pdfOrder="artist-title", pageSize="A4", pageSizeCustomW=210, pageSizeCustomH=297, previewSplit=50, previewZoom=0, showPreview=true;
+let songs=[], setlists=[], folders=[], theme="dark", printTheme="light", printMargin="normal", printPadding="normal", marginTop=18, marginBottom=18, marginLeft=18, marginRight=18, pdfOrder="artist-title", pageSize="A4", pageSizeCustomW=210, pageSizeCustomH=297, previewSplit=50, previewZoom=0, showPreview=true;
 let tab="songs", openSetId=null, picking=false;
 let context={type:"library",setId:null};
 let currentId=null, view="perform", defaultView="perform";
@@ -537,11 +537,11 @@ const setById=id=>setlists.find(s=>s.id===id);
 const folderById=id=>folders.find(f=>f.id===id);
 const ugUrl=(t,a)=>"https://www.ultimate-guitar.com/search.php?search_type=title&value="+encodeURIComponent([t||"",a||""].filter(Boolean).join(" "));
 function persist(){ DB.save(buildPayload()); }
-function buildPayload(){ return {songs,setlists,folders,theme,printTheme,printMargin,printPadding,pdfOrder,pageSize,pageSizeCustomW,pageSizeCustomH,previewSplit,previewZoom,showPreview,defaultView,saved:new Date().toISOString()}; }
+function buildPayload(){ return {songs,setlists,folders,theme,printTheme,printMargin,printPadding,pdfOrder,pageSize,pageSizeCustomW,pageSizeCustomH,previewSplit,previewZoom,showPreview,defaultView,marginTop,marginBottom,marginLeft,marginRight,saved:new Date().toISOString()}; }
 function loadFromData(d){
   songs=d.songs||[]; setlists=d.setlists||[]; folders=d.folders||[];
   theme=d.theme||"dark"; printTheme=d.printTheme||"light";
-  printMargin=d.printMargin||"normal"; printPadding=d.printPadding||"normal"; pdfOrder=d.pdfOrder||"artist-title";
+  printMargin=d.printMargin||"normal"; printPadding=d.printPadding||"normal"; pdfOrder=d.pdfOrder||"artist-title"; marginTop=d.marginTop??18; marginBottom=d.marginBottom??18; marginLeft=d.marginLeft??18; marginRight=d.marginRight??18;
   pageSize=d.pageSize||"A4"; pageSizeCustomW=d.pageSizeCustomW||210; pageSizeCustomH=d.pageSizeCustomH||297; previewSplit=d.previewSplit||50; previewZoom=d.previewZoom||0; showPreview=d.showPreview!==false; defaultView=d.defaultView||"perform";
   currentId=songs.filter(s=>!s.archived)[0]?.id||null;
   context={type:"library",setId:null}; transpose=0;
@@ -1163,12 +1163,14 @@ function renderPerform(s){
   const dims=getPageDims();
   const PX=3.7795;
   const padMm=({none:0,small:4,normal:8,generous:14}[printPadding]||8);
-  const margMm=parseFloat({none:"0",narrow:"12.7",normal:"18",wide:"25.4"}[printMargin]||"18")||18;
-  const innerPad=Math.round((padMm+margMm)*PX);
+  const innerPadT=Math.round((padMm+marginTop)*PX);
+  const innerPadB=Math.round((padMm+marginBottom)*PX);
+  const innerPadL=Math.round((padMm+marginLeft)*PX);
+  const innerPadR=Math.round((padMm+marginRight)*PX);
   const pageWpx=Math.round(dims.w*PX);
   const pageHpx=Math.round(dims.h*PX);
   const pageBg=printTheme==="dark"?"var(--bg2)":"#f8f6f0";
-  const pageStyle=`--page-w-px:${pageWpx}px;--page-h-px:${pageHpx}px;--page-pad:${innerPad}px;--page-bg:${pageBg}`;
+  const pageStyle=`--page-w-px:${pageWpx}px;--page-h-px:${pageHpx}px;--page-pad-t:${innerPadT}px;--page-pad-b:${innerPadB}px;--page-pad-l:${innerPadL}px;--page-pad-r:${innerPadR}px;--page-bg:${pageBg}`;
   $("main").innerHTML=nowbar()+toolbar(s)+`<div class="scroll" id="scroll" style="${pageStyle}"><div class="page-wrap"><div class="sheet">
       <h1 class="songtitle">${esc(s.title||"Untitled")}</h1>${s.artist?`<div class="artist">${esc(s.artist)}</div>`:""}
       ${metaInfo(s,transpose)}<div class="rule"></div>${body}</div></div></div>`;
@@ -1266,10 +1268,22 @@ function renderEditor(s){
           <span style="font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);white-space:nowrap">Print theme</span>
           <div class="seg"><button id="ptLight" class="${printTheme==="light"?"on":""}">☀ Light</button><button id="ptDark" class="${printTheme==="dark"?"on":""}">☾ Dark</button></div>
         </div>
-        <div class="field" style="flex-direction:row;align-items:center;gap:14px;padding:8px 12px;background:var(--bg);border:1px solid var(--line);border-radius:9px">
-          <span style="font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);white-space:nowrap">Page margins</span>
-          <div class="seg"><button id="pmNone" class="${printMargin==="none"?"on":""}">None</button><button id="pmNarrow" class="${printMargin==="narrow"?"on":""}">Narrow</button><button id="pmNormal" class="${printMargin==="normal"?"on":""}">Normal</button><button id="pmWide" class="${printMargin==="wide"?"on":""}">Wide</button></div>
-          <span style="font-size:12px;color:var(--muted)" id="pmHint"></span>
+        <div class="field" style="flex-direction:column;gap:8px;padding:8px 12px;background:var(--bg);border:1px solid var(--line);border-radius:9px">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <span style="font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);white-space:nowrap">Page margins</span>
+            <div class="seg" style="flex:0 0 auto">
+              <button class="margin-preset" data-mt="0"    data-mb="0"    data-ml="0"    data-mr="0">None</button>
+              <button class="margin-preset" data-mt="12.7" data-mb="12.7" data-ml="12.7" data-mr="12.7">Narrow</button>
+              <button class="margin-preset" data-mt="18"   data-mb="18"   data-ml="18"   data-mr="18">Normal</button>
+              <button class="margin-preset" data-mt="25.4" data-mb="25.4" data-ml="25.4" data-mr="25.4">Wide</button>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+            <div style="display:flex;flex-direction:column;gap:3px"><label style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Top</label><div style="display:flex;align-items:center;gap:3px"><input id="pm_mt" type="number" min="0" max="50" step="0.5" value="${marginTop}" style="width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:7px;color:var(--text);padding:5px 6px;font-size:13px;font-family:'Barlow';outline:none"><span style="font-size:10px;color:var(--muted)">mm</span></div></div>
+            <div style="display:flex;flex-direction:column;gap:3px"><label style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Bottom</label><div style="display:flex;align-items:center;gap:3px"><input id="pm_mb" type="number" min="0" max="50" step="0.5" value="${marginBottom}" style="width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:7px;color:var(--text);padding:5px 6px;font-size:13px;font-family:'Barlow';outline:none"><span style="font-size:10px;color:var(--muted)">mm</span></div></div>
+            <div style="display:flex;flex-direction:column;gap:3px"><label style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Left</label><div style="display:flex;align-items:center;gap:3px"><input id="pm_ml" type="number" min="0" max="50" step="0.5" value="${marginLeft}" style="width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:7px;color:var(--text);padding:5px 6px;font-size:13px;font-family:'Barlow';outline:none"><span style="font-size:10px;color:var(--muted)">mm</span></div></div>
+            <div style="display:flex;flex-direction:column;gap:3px"><label style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em">Right</label><div style="display:flex;align-items:center;gap:3px"><input id="pm_mr" type="number" min="0" max="50" step="0.5" value="${marginRight}" style="width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:7px;color:var(--text);padding:5px 6px;font-size:13px;font-family:'Barlow';outline:none"><span style="font-size:10px;color:var(--muted)">mm</span></div></div>
+          </div>
         </div>
         <div class="field" style="flex-direction:row;align-items:center;gap:14px;padding:8px 12px;background:var(--bg);border:1px solid var(--line);border-radius:9px">
           <span style="font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);white-space:nowrap">Text padding</span>
@@ -1340,27 +1354,46 @@ function renderEditor(s){
     const page=$("edPage"), wrap=$("edPreviewWrap"); if(!page||!wrap) return;
     const dims=getPageDims();
     const padMm=PADDINGS_MM[printPadding]||8;
-    const marginMm=parseFloat((MARGINS[printMargin]||"18mm"))||18;
     const PX_PER_MM=3.7795;
     const pageWpx=dims.w*PX_PER_MM, pageHpx=dims.h*PX_PER_MM;
     page.style.width=pageWpx+"px";
-    page.style.height=pageHpx+"px";
-    const innerPad=Math.round((padMm+marginMm)*PX_PER_MM);
-    const inner=$("edPreview"); if(inner) inner.style.padding=innerPad+"px";
+    page.style.height="auto"; // let content determine height, we'll show page breaks
+    // individual paddings: margin + text padding per side
+    const inner=$("edPreview"); if(inner){
+      inner.style.paddingTop=Math.round((marginTop+padMm)*PX_PER_MM)+"px";
+      inner.style.paddingBottom=Math.round((marginBottom+padMm)*PX_PER_MM)+"px";
+      inner.style.paddingLeft=Math.round((marginLeft+padMm)*PX_PER_MM)+"px";
+      inner.style.paddingRight=Math.round((marginRight+padMm)*PX_PER_MM)+"px";
+    }
+    // draw page break lines based on page height
+    const existingBreaks=page.querySelectorAll(".page-break-line");
+    existingBreaks.forEach(b=>b.remove());
+    const contentH=page.scrollHeight;
+    if(pageHpx>0 && contentH>pageHpx){
+      const numBreaks=Math.floor(contentH/pageHpx);
+      for(let i=1;i<=numBreaks;i++){
+        const yPos=Math.round(i*pageHpx);
+        const brk=document.createElement("div");
+        brk.className="page-break-line";
+        brk.style.cssText=`position:absolute;left:0;right:0;top:${yPos}px;height:2px;background:repeating-linear-gradient(90deg,var(--amber-dim) 0,var(--amber-dim) 8px,transparent 8px,transparent 16px);z-index:10;pointer-events:none`;
+        const lbl=document.createElement("span");
+        lbl.style.cssText="position:absolute;right:8px;top:-16px;font-size:10px;font-family:'JetBrains Mono';color:var(--amber-dim);letter-spacing:.05em;opacity:.7";
+        lbl.textContent="p."+(i+1);
+        brk.appendChild(lbl);
+        page.appendChild(brk);
+      }
+    }
+    page.style.position="relative";
     // compute fit scale
     const wrapW=wrap.clientWidth-20, wrapH=wrap.clientHeight-20;
-    const fitScale=Math.min(wrapW/pageWpx, wrapH/pageHpx, 1);
+    const fitScale=Math.min(wrapW/pageWpx, 1);
     // apply zoom steps (each step = 10%)
     const scale=previewZoom===0 ? fitScale : Math.max(0.1, fitScale + previewZoom*0.1);
     page.style.transform=`scale(${scale})`;
     page.style.transformOrigin="top center";
-    // adjust wrap scroll area by reserving actual rendered size
-    const rendW=Math.round(pageWpx*scale), rendH=Math.round(pageHpx*scale);
-    page.style.marginBottom=Math.round(pageHpx*(scale-1))+"px";
-    wrap.style.alignItems=scale>0.98?"flex-start":"flex-start";
+    page.style.marginBottom=Math.round((page.scrollHeight)*(scale-1))+"px";
     // update zoom label
     const lbl=$("zoomLabel"); if(lbl) lbl.textContent=Math.round(scale*100)+"%";
-    // update page label
     const plbl=$("previewPageLabel");
     if(plbl) plbl.textContent=pageSize==="Custom"?pageSizeCustomW+"×"+pageSizeCustomH+" mm":(PAGE_SIZES[pageSize]?.label||pageSize);
   }
@@ -1428,10 +1461,27 @@ function renderEditor(s){
   const setPp=p=>{printPadding=p;persist();["none","small","normal","generous"].forEach(k=>{const id="pp"+k[0].toUpperCase()+k.slice(1);$(id).className=k===p?"on":"";});$("ppHint").textContent=PADDING_LABELS[p];};
   ["none","small","normal","generous"].forEach(k=>{const id="pp"+k[0].toUpperCase()+k.slice(1);$(id).onclick=()=>setPp(k);});
   $("ppHint").textContent=PADDING_LABELS[printPadding];
-  const MARGIN_LABELS={none:"0 mm — edge to edge",narrow:"12.7 mm — Word Narrow",normal:"18 mm — Word Normal",wide:"25.4 mm — Word Wide"};
-  const setPm=m=>{printMargin=m;persist();["none","narrow","normal","wide"].forEach(k=>$(  "pm"+k[0].toUpperCase()+k.slice(1)).className=k===m?"on":"");$("pmHint").textContent=MARGIN_LABELS[m];};
-  ["none","narrow","normal","wide"].forEach(k=>{const id="pm"+k[0].toUpperCase()+k.slice(1);$(id).onclick=()=>setPm(k);});
-  $("pmHint").textContent=MARGIN_LABELS[printMargin];
+  // margin preset buttons
+  document.querySelectorAll(".margin-preset").forEach(b=>b.onclick=()=>{
+    marginTop=+b.dataset.mt; marginBottom=+b.dataset.mb;
+    marginLeft=+b.dataset.ml; marginRight=+b.dataset.mr;
+    const mt=$("pm_mt"),mb=$("pm_mb"),ml=$("pm_ml"),mr=$("pm_mr");
+    if(mt)mt.value=marginTop; if(mb)mb.value=marginBottom;
+    if(ml)ml.value=marginLeft; if(mr)mr.value=marginRight;
+    persist(); updatePreview();
+  });
+  // individual margin inputs
+  [["pm_mt","mt"],["pm_mb","mb"],["pm_ml","ml"],["pm_mr","mr"]].forEach(([id,key])=>{
+    const el=$(id); if(!el) return;
+    el.oninput=()=>{
+      const v=Math.max(0,Math.min(50,parseFloat(el.value)||0));
+      if(key==="mt") marginTop=v;
+      else if(key==="mb") marginBottom=v;
+      else if(key==="ml") marginLeft=v;
+      else if(key==="mr") marginRight=v;
+      persist(); updatePreview();
+    };
+  });
   document.querySelectorAll(".fmtbar [data-h]").forEach(b=>b.onclick=()=>applyHeading(+b.dataset.h));
   document.querySelectorAll(".fmtbar .sw").forEach(b=>b.onclick=()=>wrapColor(b.dataset.col));
   $("fmtBold").onclick=()=>wrapInline("**","**");
@@ -1616,6 +1666,10 @@ function applyPrintTheme(){
   const root=document.documentElement;
   root.setAttribute("data-print-theme", printTheme);
   root.style.setProperty("--print-margin", MARGINS[printMargin]||"18mm");
+  root.style.setProperty("--pm-top", marginTop+"mm");
+  root.style.setProperty("--pm-bottom", marginBottom+"mm");
+  root.style.setProperty("--pm-left", marginLeft+"mm");
+  root.style.setProperty("--pm-right", marginRight+"mm");
   root.style.setProperty("--print-padding", PADDINGS[printPadding]||"8mm");
   const dims=getPageDims();
   root.style.setProperty("--print-page-w", dims.w+"mm");
@@ -1623,6 +1677,8 @@ function applyPrintTheme(){
   const restore=()=>{
     root.removeAttribute("data-print-theme");
     root.style.removeProperty("--print-margin");
+    root.style.removeProperty("--pm-top"); root.style.removeProperty("--pm-bottom");
+    root.style.removeProperty("--pm-left"); root.style.removeProperty("--pm-right");
     root.style.removeProperty("--print-padding");
     root.style.removeProperty("--print-page-w");
     root.style.removeProperty("--print-page-h");
@@ -1711,7 +1767,7 @@ document.addEventListener("keydown",e=>{const tag=(e.target.tagName||"").toLower
     case "]":sheetSize=Math.min(42,sheetSize+1);renderMain();break; case "[":sheetSize=Math.max(11,sheetSize-1);renderMain();break;
   }});
 
-(async function init(){const d=await DB.load();if(d){songs=d.songs||[];setlists=d.setlists||[];folders=d.folders||[];theme=d.theme||"dark";printTheme=d.printTheme||"light";printMargin=d.printMargin||"normal";printPadding=d.printPadding||"normal";pdfOrder=d.pdfOrder||"artist-title";pageSize=d.pageSize||"A4";pageSizeCustomW=d.pageSizeCustomW||210;pageSizeCustomH=d.pageSizeCustomH||297;previewSplit=d.previewSplit||50;previewZoom=d.previewZoom||0;showPreview=d.showPreview!==false;defaultView=d.defaultView||"perform";}
+(async function init(){const d=await DB.load();if(d){songs=d.songs||[];setlists=d.setlists||[];folders=d.folders||[];theme=d.theme||"dark";printTheme=d.printTheme||"light";printMargin=d.printMargin||"normal";printPadding=d.printPadding||"normal";pdfOrder=d.pdfOrder||"artist-title";marginTop=d.marginTop??18;marginBottom=d.marginBottom??18;marginLeft=d.marginLeft??18;marginRight=d.marginRight??18;pageSize=d.pageSize||"A4";pageSizeCustomW=d.pageSizeCustomW||210;pageSizeCustomH=d.pageSizeCustomH||297;previewSplit=d.previewSplit||50;previewZoom=d.previewZoom||0;showPreview=d.showPreview!==false;defaultView=d.defaultView||"perform";}
   if(!songs.length){songs=[{id:uid(),title:"Demo — delete me",artist:"How it renders",key:"C",capo:"0",tempo:"100",transpose:0,
     chords:"# Part One\n[Intro]\nC        G        Am       F\n\n[Verse]\nC                 G\nThis is a placeholder lyric line\nAm                F\nchords sit right above the words\n\n## A louder section\n[Chorus]\nF     G      C        Am\n{red:watch the modulation here}\nF     G      C\npaste real chords over this",updated:Date.now()}];}
   currentId=songs[0].id;
