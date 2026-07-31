@@ -316,7 +316,7 @@
 <div class="top">
   <div>
     <div class="brand"><span class="dot"></span>STAGE SHEETS</div>
-    <div class="sub">songs &amp; setlists <span style="font-family:'JetBrains Mono';font-size:9px;opacity:.45;letter-spacing:.04em">v3.3.2</span></div>
+    <div class="sub">songs &amp; setlists <span style="font-family:'JetBrains Mono';font-size:9px;opacity:.45;letter-spacing:.04em">v3.3.3</span></div>
   </div>
   <div class="spacer"></div>
   <input type="file" id="importFile" accept=".json" style="display:none">
@@ -1366,29 +1366,31 @@ function renderEditor(s){
     m.innerHTML=_previewHTML;
     document.body.appendChild(m);
 
-    // Walk child elements to find where each page break should land
+    // Walk child elements to split cleanly at element boundaries
     const children=Array.from(m.children);
-    const pages=[[]]; // array of arrays of element indices
-    let pageUsed=0;
+    const pages=[[]];
+    let pageStart=0; // y offset where current page's content area starts
+
     for(let ci=0;ci<children.length;ci++){
       const el=children[ci];
       const elTop=el.offsetTop;
       const elBot=elTop+el.offsetHeight;
-      // if this element starts beyond the current page's content area, new page
-      if(pageUsed>0 && elTop>=pageUsed){
+      const pageEnd=pageStart+contentH;
+
+      if(pages[pages.length-1].length>0 && elTop>=pageEnd){
+        // element starts on or after end of current page — new page
         pages.push([]);
-        pageUsed=(pages.length-1)*contentH;
-      }
-      // if element bottom overflows current page, push to next page
-      if(elBot>(pages.length-1)*contentH+contentH && pageUsed>0){
+        pageStart=elTop;
+      } else if(pages[pages.length-1].length>0 && elBot>pageEnd){
+        // element overlaps the page boundary — push entire element to next page
         pages.push([]);
+        pageStart=elTop;
       }
       pages[pages.length-1].push(ci);
-      pageUsed=Math.max(pageUsed, elBot-(pages.length-1)*contentH);
     }
-    // if no children, at least one page
-    if(pages[0].length===0 && children.length===0) pages[0]=[];
 
+    // Re-measure to get per-element offsetTop for positioning within cards
+    const elOffsets=Array.from(m.children).map(el=>({top:el.offsetTop,html:el.outerHTML}));
     document.body.removeChild(m);
 
     // scale
@@ -1399,41 +1401,58 @@ function renderEditor(s){
     const scaledH=Math.round(pageHpx*scale);
     const gap=12;
 
-    // Build one container per page with only that page's elements
-    // Re-parse HTML into a temp container to clone elements per page
-    const src=document.createElement("div");
-    src.innerHTML=_previewHTML;
-    const srcChildren=Array.from(src.children);
-
+    // Build page cards
     let container=wrap.querySelector(".ed-pages-container");
     if(!container){
       container=document.createElement("div");
       container.className="ed-pages-container";
       wrap.appendChild(container);
     }
-    // rebuild pages
     while(container.firstChild) container.removeChild(container.firstChild);
+
+    // Compute pageStart per page (the offsetTop of the first element on that page)
+    const pageStarts=pages.map(indices=>{
+      if(!indices.length) return 0;
+      return elOffsets[indices[0]]?.top||0;
+    });
 
     pages.forEach((indices,pi)=>{
       const card=document.createElement("div");
       card.style.cssText=`width:${pageWpx}px;height:${pageHpx}px;flex:0 0 auto;position:relative;overflow:hidden;background:${pageBg};box-shadow:0 4px 24px rgba(0,0,0,.5);transform:scale(${scale});transform-origin:top center;margin-bottom:${scaledH-pageHpx+gap}px`;
-      // content area
+
+      // content area — position each element relative to where this page starts
       const area=document.createElement("div");
       area.style.cssText=`position:absolute;left:${plPx}px;top:${ptPx}px;width:${contentW}px;font-size:${sheetSize}px;font-family:'Barlow',sans-serif;line-height:1.65;white-space:pre-wrap;word-break:break-word`;
       area.className="bodytext";
-      indices.forEach(ci=>{
-        if(srcChildren[ci]) area.appendChild(srcChildren[ci].cloneNode(true));
-      });
-      // if page 1 and no children split happened, just dump all content
-      if(pi===0 && pages.length===1){
+
+      if(pages.length===1){
+        // single page — just render everything normally
         area.innerHTML=_previewHTML;
+      } else {
+        const thisPageStart=pageStarts[pi];
+        const inner=document.createElement("div");
+        inner.style.cssText="position:relative";
+        indices.forEach(ci=>{
+          const elInfo=elOffsets[ci];
+          const wrapper=document.createElement("div");
+          wrapper.style.cssText=`position:absolute;left:0;right:0;top:${elInfo.top-thisPageStart}px`;
+          wrapper.innerHTML=elInfo.html;
+          inner.appendChild(wrapper);
+        });
+        // set height of inner to content of this page
+        const lastIdx=indices[indices.length-1];
+        const lastEl=elOffsets[lastIdx];
+        area.style.position="absolute";
+        area.style.top=ptPx+"px";
+        area.appendChild(inner);
       }
+
       card.appendChild(area);
       if(pi>0){
-        const lbl=document.createElement("div");
-        lbl.style.cssText="position:absolute;top:8px;right:10px;font-size:10px;font-family:'JetBrains Mono';color:var(--muted);opacity:.45";
-        lbl.textContent="p."+(pi+1);
-        card.appendChild(lbl);
+        const plbl=document.createElement("div");
+        plbl.style.cssText="position:absolute;top:8px;right:10px;font-size:10px;font-family:'JetBrains Mono';color:var(--muted);opacity:.45";
+        plbl.textContent="p."+(pi+1);
+        card.appendChild(plbl);
       }
       container.appendChild(card);
     });
@@ -1453,10 +1472,11 @@ function renderEditor(s){
     const capo=$("fCapo")?.value.trim()||s.capo||"";
     const tempo=$("fTempo")?.value.trim()||s.tempo||"";
     const fakeS={title,artist,key,capo,tempo,transpose};
-    const header=(title?`<h1 class="songtitle" style="font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,4vw,42px);letter-spacing:1.5px;margin:0;line-height:1">${esc(title)}</h1>`:"")
+    const headerInner=(title?`<h1 class="songtitle" style="font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,4vw,42px);letter-spacing:1.5px;margin:0;line-height:1">${esc(title)}</h1>`:"")
       +(artist?`<div class="artist" style="color:var(--teal);font-size:16px;font-weight:600;margin-top:2px">${esc(artist)}</div>`:"")
       +metaInfo(fakeS,transpose)
       +'<div class="rule" style="height:1px;background:linear-gradient(90deg,var(--amber-dim),transparent);margin:10px 0 14px"></div>';
+    const header=`<div class="sheet-header" style="display:block">${headerInner}</div>`;
     _previewHTML=header+renderBody(ta.value,transpose,flats);
     const trVal=$("trVal"); if(trVal) trVal.textContent=transpose>0?"+"+transpose:transpose;
     scalePreview();
