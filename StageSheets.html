@@ -316,7 +316,7 @@
 <div class="top">
   <div>
     <div class="brand"><span class="dot"></span>STAGE SHEETS</div>
-    <div class="sub">songs &amp; setlists <span style="font-family:'JetBrains Mono';font-size:9px;opacity:.45;letter-spacing:.04em">v3.3.1</span></div>
+    <div class="sub">songs &amp; setlists <span style="font-family:'JetBrains Mono';font-size:9px;opacity:.45;letter-spacing:.04em">v3.3.2</span></div>
   </div>
   <div class="spacer"></div>
   <input type="file" id="importFile" accept=".json" style="display:none">
@@ -1360,46 +1360,50 @@ function renderEditor(s){
     const contentW=pageWpx-plPx-prPx;
     const contentH=pageHpx-ptPx-pbPx;
 
-    // measure total content height using a hidden div
+    // Render into a hidden measurer to get per-element positions
     const m=document.createElement("div");
-    m.style.cssText=`position:fixed;top:-9999px;left:-9999px;width:${contentW}px;font-size:${sheetSize}px;font-family:'Barlow',sans-serif;line-height:1.65;white-space:pre-wrap;word-break:break-word;visibility:hidden`;
+    m.style.cssText=`position:fixed;top:-9999px;left:0;width:${contentW}px;font-size:${sheetSize}px;font-family:'Barlow',sans-serif;line-height:1.65;white-space:pre-wrap;word-break:break-word;visibility:hidden`;
     m.innerHTML=_previewHTML;
     document.body.appendChild(m);
-    const totalH=m.scrollHeight||contentH;
+
+    // Walk child elements to find where each page break should land
+    const children=Array.from(m.children);
+    const pages=[[]]; // array of arrays of element indices
+    let pageUsed=0;
+    for(let ci=0;ci<children.length;ci++){
+      const el=children[ci];
+      const elTop=el.offsetTop;
+      const elBot=elTop+el.offsetHeight;
+      // if this element starts beyond the current page's content area, new page
+      if(pageUsed>0 && elTop>=pageUsed){
+        pages.push([]);
+        pageUsed=(pages.length-1)*contentH;
+      }
+      // if element bottom overflows current page, push to next page
+      if(elBot>(pages.length-1)*contentH+contentH && pageUsed>0){
+        pages.push([]);
+      }
+      pages[pages.length-1].push(ci);
+      pageUsed=Math.max(pageUsed, elBot-(pages.length-1)*contentH);
+    }
+    // if no children, at least one page
+    if(pages[0].length===0 && children.length===0) pages[0]=[];
+
     document.body.removeChild(m);
 
-    // scale to fit wrap width
+    // scale
     const wrapW=(wrap.clientWidth||400)-24;
     const fitScale=Math.min(wrapW/pageWpx,1);
     const scale=previewZoom===0?fitScale:Math.max(0.1,fitScale+previewZoom*0.1);
-
-    // build page cards — each clips a vertical slice of the content
-    const numPages=Math.max(1,Math.ceil(totalH/contentH));
     const pageBg=printTheme==="dark"?"var(--bg2)":"#f8f6f0";
     const scaledH=Math.round(pageHpx*scale);
     const gap=12;
 
-    let html="";
-    for(let i=0;i<numPages;i++){
-      const clipTop=i*contentH;
-      html+=`<div style="
-        width:${pageWpx}px;height:${pageHpx}px;
-        flex:0 0 auto;position:relative;overflow:hidden;
-        background:${pageBg};
-        box-shadow:0 4px 24px rgba(0,0,0,.5);
-        transform:scale(${scale});transform-origin:top center;
-        margin-bottom:${scaledH-pageHpx+gap}px;
-      ">
-        <div style="
-          position:absolute;
-          left:${plPx}px;top:${ptPx-clipTop}px;
-          width:${contentW}px;
-          font-size:${sheetSize}px;font-family:'Barlow',sans-serif;
-          line-height:1.65;white-space:pre-wrap;word-break:break-word;
-        " class="bodytext">${_previewHTML}</div>
-        ${i>0?`<div style="position:absolute;top:8px;right:10px;font-size:10px;font-family:'JetBrains Mono';color:var(--muted);opacity:.45">p.${i+1}</div>`:""}
-      </div>`;
-    }
+    // Build one container per page with only that page's elements
+    // Re-parse HTML into a temp container to clone elements per page
+    const src=document.createElement("div");
+    src.innerHTML=_previewHTML;
+    const srcChildren=Array.from(src.children);
 
     let container=wrap.querySelector(".ed-pages-container");
     if(!container){
@@ -1407,7 +1411,32 @@ function renderEditor(s){
       container.className="ed-pages-container";
       wrap.appendChild(container);
     }
-    container.innerHTML=html;
+    // rebuild pages
+    while(container.firstChild) container.removeChild(container.firstChild);
+
+    pages.forEach((indices,pi)=>{
+      const card=document.createElement("div");
+      card.style.cssText=`width:${pageWpx}px;height:${pageHpx}px;flex:0 0 auto;position:relative;overflow:hidden;background:${pageBg};box-shadow:0 4px 24px rgba(0,0,0,.5);transform:scale(${scale});transform-origin:top center;margin-bottom:${scaledH-pageHpx+gap}px`;
+      // content area
+      const area=document.createElement("div");
+      area.style.cssText=`position:absolute;left:${plPx}px;top:${ptPx}px;width:${contentW}px;font-size:${sheetSize}px;font-family:'Barlow',sans-serif;line-height:1.65;white-space:pre-wrap;word-break:break-word`;
+      area.className="bodytext";
+      indices.forEach(ci=>{
+        if(srcChildren[ci]) area.appendChild(srcChildren[ci].cloneNode(true));
+      });
+      // if page 1 and no children split happened, just dump all content
+      if(pi===0 && pages.length===1){
+        area.innerHTML=_previewHTML;
+      }
+      card.appendChild(area);
+      if(pi>0){
+        const lbl=document.createElement("div");
+        lbl.style.cssText="position:absolute;top:8px;right:10px;font-size:10px;font-family:'JetBrains Mono';color:var(--muted);opacity:.45";
+        lbl.textContent="p."+(pi+1);
+        card.appendChild(lbl);
+      }
+      container.appendChild(card);
+    });
 
     const lbl=$("zoomLabel"); if(lbl) lbl.textContent=Math.round(scale*100)+"%";
     const plbl=$("previewPageLabel");
