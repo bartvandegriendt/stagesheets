@@ -128,11 +128,9 @@
   .ed-preview-col{display:flex;flex-direction:column;gap:6px;min-height:0}
   .ed-preview-label{color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.1em;display:flex;align-items:center;gap:8px;flex:0 0 auto}
   .ed-preview-label span{color:var(--amber);font-family:"JetBrains Mono";font-size:11px}
-  .ed-preview-wrap{flex:1;overflow:auto;min-height:0;display:flex;align-items:flex-start;justify-content:center;padding:10px 4px 40px;background:var(--bg3);border:1px solid var(--line);border-radius:11px}
-  .ed-page{background:var(--bg2);box-shadow:0 4px 20px rgba(0,0,0,.4);transform-origin:top center;transition:transform .2s;flex:0 0 auto;overflow:hidden;position:relative}
-  [data-theme="light"] .ed-page{box-shadow:0 4px 20px rgba(0,0,0,.2)}
-  .ed-page .bodytext{font-size:var(--sheet);line-height:1.65;white-space:pre-wrap;word-break:break-word}
-  .ed-page-inner{}
+  .ed-preview-wrap{flex:1;overflow:auto;min-height:0;background:var(--bg3);border:1px solid var(--line);border-radius:11px}
+  .ed-pages-container{display:flex;flex-direction:column;align-items:center;padding:12px 4px 40px}
+  .ed-page-card{position:relative;overflow:hidden;flex:0 0 auto}
   .ed-foot{flex:0 0 auto;display:flex;flex-direction:column;position:relative}
   .ed-settings-panel{display:flex;flex-direction:column;gap:8px;padding:0 20px;background:var(--bg2);border-top:1px solid var(--line);overflow:hidden;max-height:0;transition:max-height .28s ease,padding .28s ease}
   .ed-settings-panel.open{max-height:500px;padding-top:12px;padding-bottom:12px}
@@ -318,7 +316,7 @@
 <div class="top">
   <div>
     <div class="brand"><span class="dot"></span>STAGE SHEETS</div>
-    <div class="sub">songs &amp; setlists <span style="font-family:'JetBrains Mono';font-size:9px;opacity:.45;letter-spacing:.04em">v3.3.0</span></div>
+    <div class="sub">songs &amp; setlists <span style="font-family:'JetBrains Mono';font-size:9px;opacity:.45;letter-spacing:.04em">v3.3.1</span></div>
   </div>
   <div class="spacer"></div>
   <input type="file" id="importFile" accept=".json" style="display:none">
@@ -1351,47 +1349,68 @@ function renderEditor(s){
   // page size wiring
   const PADDINGS_MM={none:0,small:4,normal:8,generous:14};
   function scalePreview(){
-    const page=$("edPage"), wrap=$("edPreviewWrap"); if(!page||!wrap) return;
+    const wrap=$("edPreviewWrap"); if(!wrap) return;
+
     const dims=getPageDims();
     const padMm=PADDINGS_MM[printPadding]||8;
-    const PX_PER_MM=3.7795;
-    const pageWpx=dims.w*PX_PER_MM, pageHpx=dims.h*PX_PER_MM;
-    page.style.width=pageWpx+"px";
-    page.style.height="auto"; // let content determine height, we'll show page breaks
-    // individual paddings: margin + text padding per side
-    const inner=$("edPreview"); if(inner){
-      inner.style.paddingTop=Math.round((marginTop+padMm)*PX_PER_MM)+"px";
-      inner.style.paddingBottom=Math.round((marginBottom+padMm)*PX_PER_MM)+"px";
-      inner.style.paddingLeft=Math.round((marginLeft+padMm)*PX_PER_MM)+"px";
-      inner.style.paddingRight=Math.round((marginRight+padMm)*PX_PER_MM)+"px";
-    }
-    // draw page break lines based on page height
-    const existingBreaks=page.querySelectorAll(".page-break-line");
-    existingBreaks.forEach(b=>b.remove());
-    const contentH=page.scrollHeight;
-    if(pageHpx>0 && contentH>pageHpx){
-      const numBreaks=Math.floor(contentH/pageHpx);
-      for(let i=1;i<=numBreaks;i++){
-        const yPos=Math.round(i*pageHpx);
-        const brk=document.createElement("div");
-        brk.className="page-break-line";
-        brk.style.cssText=`position:absolute;left:0;right:0;top:${yPos}px;height:2px;background:repeating-linear-gradient(90deg,var(--amber-dim) 0,var(--amber-dim) 8px,transparent 8px,transparent 16px);z-index:10;pointer-events:none`;
-        const lbl=document.createElement("span");
-        lbl.style.cssText="position:absolute;right:8px;top:-16px;font-size:10px;font-family:'JetBrains Mono';color:var(--amber-dim);letter-spacing:.05em;opacity:.7";
-        lbl.textContent="p."+(i+1);
-        brk.appendChild(lbl);
-        page.appendChild(brk);
-      }
-    }
-    page.style.position="relative";
+    const PX=3.7795;
+    const pageWpx=Math.round(dims.w*PX);
+    const pageHpx=Math.round(dims.h*PX);
+    const ptPx=Math.round((marginTop+padMm)*PX);
+    const pbPx=Math.round((marginBottom+padMm)*PX);
+    const plPx=Math.round((marginLeft+padMm)*PX);
+    const prPx=Math.round((marginRight+padMm)*PX);
+    const contentH=pageHpx-ptPx-pbPx;
+    const contentW=pageWpx-plPx-prPx;
+
+    // measure actual rendered content by temporarily rendering off-screen
+    const measurer=document.createElement("div");
+    measurer.style.cssText=`position:fixed;visibility:hidden;width:${contentW}px;padding:0;font-size:${sheetSize}px;font-family:'Barlow',sans-serif;line-height:1.65;white-space:pre-wrap;word-break:break-word`;
+    measurer.innerHTML=$("edPreview")?.innerHTML||"";
+    document.body.appendChild(measurer);
+    const totalH=measurer.scrollHeight;
+    document.body.removeChild(measurer);
+
     // compute fit scale
-    const wrapW=wrap.clientWidth-20, wrapH=wrap.clientHeight-20;
+    const wrapW=wrap.clientWidth-24;
     const fitScale=Math.min(wrapW/pageWpx, 1);
-    // apply zoom steps (each step = 10%)
-    const scale=previewZoom===0 ? fitScale : Math.max(0.1, fitScale + previewZoom*0.1);
-    page.style.transform=`scale(${scale})`;
-    page.style.transformOrigin="top center";
-    page.style.marginBottom=Math.round((page.scrollHeight)*(scale-1))+"px";
+    const scale=previewZoom===0?fitScale:Math.max(0.1,fitScale+previewZoom*0.1);
+
+    // build page cards
+    const numPages=Math.max(1,Math.ceil(totalH/contentH));
+    let html="";
+    for(let i=0;i<numPages;i++){
+      const clipTop=i*contentH;
+      html+=`<div class="ed-page-card" style="
+        width:${pageWpx}px;height:${pageHpx}px;
+        flex:0 0 auto;position:relative;overflow:hidden;
+        background:var(--bg2);
+        box-shadow:0 4px 20px rgba(0,0,0,.45);
+        transform:scale(${scale});transform-origin:top center;
+        margin-bottom:${Math.round(pageHpx*(scale-1))+8}px;
+      ">
+        <div style="
+          position:absolute;
+          top:${ptPx-clipTop}px;left:${plPx}px;
+          width:${contentW}px;
+          font-size:${sheetSize}px;font-family:'Barlow',sans-serif;
+          line-height:1.65;white-space:pre-wrap;word-break:break-word;
+        " class="bodytext">${$("edPreview")?.innerHTML||""}</div>
+        ${i>0?`<div style="position:absolute;top:6px;right:10px;font-size:10px;font-family:'JetBrains Mono';color:var(--muted);opacity:.5">p.${i+1}</div>`:""}
+      </div>`;
+    }
+
+    // replace wrap contents
+    let container=wrap.querySelector(".ed-pages-container");
+    if(!container){
+      container=document.createElement("div");
+      container.className="ed-pages-container";
+      container.style.cssText="display:flex;flex-direction:column;align-items:center;padding:10px 4px";
+      wrap.innerHTML="";
+      wrap.appendChild(container);
+    }
+    container.innerHTML=html;
+
     // update zoom label
     const lbl=$("zoomLabel"); if(lbl) lbl.textContent=Math.round(scale*100)+"%";
     const plbl=$("previewPageLabel");
