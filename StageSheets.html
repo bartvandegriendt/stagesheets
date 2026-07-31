@@ -316,7 +316,7 @@
 <div class="top">
   <div>
     <div class="brand"><span class="dot"></span>STAGE SHEETS</div>
-    <div class="sub">songs &amp; setlists <span style="font-family:'JetBrains Mono';font-size:9px;opacity:.45;letter-spacing:.04em">v3.3.4</span></div>
+    <div class="sub">songs &amp; setlists <span style="font-family:'JetBrains Mono';font-size:9px;opacity:.45;letter-spacing:.04em">v3.3.5</span></div>
   </div>
   <div class="spacer"></div>
   <input type="file" id="importFile" accept=".json" style="display:none">
@@ -1421,10 +1421,19 @@ function renderEditor(s){
       content.innerHTML=_previewHTML;
       card.appendChild(content);
 
+      // White mask over bottom margin — hides any content that bleeds past contentH
+      const bottomMask=document.createElement("div");
+      bottomMask.style.cssText=`position:absolute;left:0;right:0;bottom:0;height:${pbPx}px;background:${pageBg};z-index:2`;
+      card.appendChild(bottomMask);
+      // White mask over top margin
+      const topMask=document.createElement("div");
+      topMask.style.cssText=`position:absolute;left:0;right:0;top:0;height:${ptPx}px;background:${pageBg};z-index:2`;
+      card.appendChild(topMask);
+
       if(pi>0){
         const lbl=document.createElement("div");
         lbl.style.cssText="position:absolute;top:8px;right:10px;"
-          +"font-size:10px;font-family:'JetBrains Mono';color:var(--muted);opacity:.45";
+          +"font-size:10px;font-family:'JetBrains Mono';color:var(--muted);opacity:.45;z-index:3";
         lbl.textContent="p."+(pi+1);
         card.appendChild(lbl);
       }
