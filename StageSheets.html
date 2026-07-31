@@ -316,7 +316,7 @@
 <div class="top">
   <div>
     <div class="brand"><span class="dot"></span>STAGE SHEETS</div>
-    <div class="sub">songs &amp; setlists <span style="font-family:'JetBrains Mono';font-size:9px;opacity:.45;letter-spacing:.04em">v3.3.3</span></div>
+    <div class="sub">songs &amp; setlists <span style="font-family:'JetBrains Mono';font-size:9px;opacity:.45;letter-spacing:.04em">v3.3.4</span></div>
   </div>
   <div class="spacer"></div>
   <input type="file" id="importFile" accept=".json" style="display:none">
@@ -1356,44 +1356,35 @@ function renderEditor(s){
     const ptPx=Math.round((marginTop+padMm)*PX);
     const pbPx=Math.round((marginBottom+padMm)*PX);
     const plPx=Math.round((marginLeft+padMm)*PX);
-    const prPx=Math.round((marginRight+padMm)*PX);
-    const contentW=pageWpx-plPx-prPx;
+    const contentW=pageWpx-plPx-Math.round((marginRight+padMm)*PX);
     const contentH=pageHpx-ptPx-pbPx;
 
-    // Render into a hidden measurer to get per-element positions
+    // Step 1: measure element positions in a hidden div with exact content width
     const m=document.createElement("div");
-    m.style.cssText=`position:fixed;top:-9999px;left:0;width:${contentW}px;font-size:${sheetSize}px;font-family:'Barlow',sans-serif;line-height:1.65;white-space:pre-wrap;word-break:break-word;visibility:hidden`;
+    m.style.cssText=`position:fixed;top:-9999px;left:0;width:${contentW}px;`
+      +`font-size:${sheetSize}px;font-family:'Barlow',sans-serif;`
+      +`line-height:1.65;white-space:pre-wrap;word-break:break-word;visibility:hidden`;
     m.innerHTML=_previewHTML;
     document.body.appendChild(m);
 
-    // Walk child elements to split cleanly at element boundaries
-    const children=Array.from(m.children);
-    const pages=[[]];
-    let pageStart=0; // y offset where current page's content area starts
-
-    for(let ci=0;ci<children.length;ci++){
-      const el=children[ci];
-      const elTop=el.offsetTop;
-      const elBot=elTop+el.offsetHeight;
-      const pageEnd=pageStart+contentH;
-
-      if(pages[pages.length-1].length>0 && elTop>=pageEnd){
-        // element starts on or after end of current page — new page
-        pages.push([]);
-        pageStart=elTop;
-      } else if(pages[pages.length-1].length>0 && elBot>pageEnd){
-        // element overlaps the page boundary — push entire element to next page
-        pages.push([]);
-        pageStart=elTop;
+    // Collect the offsetTop of each child so we know where page breaks fall
+    const breaks=[0]; // y positions where each page starts (in content-area coords)
+    let pageEnd=contentH;
+    for(const el of m.children){
+      const elBot=el.offsetTop+el.offsetHeight;
+      if(el.offsetTop>=pageEnd){
+        // element starts on a new page
+        breaks.push(el.offsetTop);
+        pageEnd=el.offsetTop+contentH;
+      } else if(elBot>pageEnd){
+        // element straddles boundary — push it to the next page
+        breaks.push(el.offsetTop);
+        pageEnd=el.offsetTop+contentH;
       }
-      pages[pages.length-1].push(ci);
     }
-
-    // Re-measure to get per-element offsetTop for positioning within cards
-    const elOffsets=Array.from(m.children).map(el=>({top:el.offsetTop,html:el.outerHTML}));
     document.body.removeChild(m);
 
-    // scale
+    // Step 2: scale
     const wrapW=(wrap.clientWidth||400)-24;
     const fitScale=Math.min(wrapW/pageWpx,1);
     const scale=previewZoom===0?fitScale:Math.max(0.1,fitScale+previewZoom*0.1);
@@ -1401,7 +1392,8 @@ function renderEditor(s){
     const scaledH=Math.round(pageHpx*scale);
     const gap=12;
 
-    // Build page cards
+    // Step 3: build one card per page
+    // Each card shows the full content shifted up so that page's start is at ptPx
     let container=wrap.querySelector(".ed-pages-container");
     if(!container){
       container=document.createElement("div");
@@ -1410,56 +1402,38 @@ function renderEditor(s){
     }
     while(container.firstChild) container.removeChild(container.firstChild);
 
-    // Compute pageStart per page (the offsetTop of the first element on that page)
-    const pageStarts=pages.map(indices=>{
-      if(!indices.length) return 0;
-      return elOffsets[indices[0]]?.top||0;
-    });
-
-    pages.forEach((indices,pi)=>{
+    breaks.forEach((breakY,pi)=>{
       const card=document.createElement("div");
-      card.style.cssText=`width:${pageWpx}px;height:${pageHpx}px;flex:0 0 auto;position:relative;overflow:hidden;background:${pageBg};box-shadow:0 4px 24px rgba(0,0,0,.5);transform:scale(${scale});transform-origin:top center;margin-bottom:${scaledH-pageHpx+gap}px`;
+      card.style.cssText=`width:${pageWpx}px;height:${pageHpx}px;`
+        +`flex:0 0 auto;position:relative;overflow:hidden;`
+        +`background:${pageBg};box-shadow:0 4px 24px rgba(0,0,0,.5);`
+        +`transform:scale(${scale});transform-origin:top center;`
+        +`margin-bottom:${scaledH-pageHpx+gap}px`;
 
-      // content area — position each element relative to where this page starts
-      const area=document.createElement("div");
-      area.style.cssText=`position:absolute;left:${plPx}px;top:${ptPx}px;width:${contentW}px;font-size:${sheetSize}px;font-family:'Barlow',sans-serif;line-height:1.65;white-space:pre-wrap;word-break:break-word`;
-      area.className="bodytext";
+      // The content div: full HTML, shifted so this page's breakY lands at ptPx
+      const content=document.createElement("div");
+      content.className="bodytext";
+      content.style.cssText=`position:absolute;`
+        +`left:${plPx}px;top:${ptPx-breakY}px;`
+        +`width:${contentW}px;`
+        +`font-size:${sheetSize}px;font-family:'Barlow',sans-serif;`
+        +`line-height:1.65;white-space:pre-wrap;word-break:break-word`;
+      content.innerHTML=_previewHTML;
+      card.appendChild(content);
 
-      if(pages.length===1){
-        // single page — just render everything normally
-        area.innerHTML=_previewHTML;
-      } else {
-        const thisPageStart=pageStarts[pi];
-        const inner=document.createElement("div");
-        inner.style.cssText="position:relative";
-        indices.forEach(ci=>{
-          const elInfo=elOffsets[ci];
-          const wrapper=document.createElement("div");
-          wrapper.style.cssText=`position:absolute;left:0;right:0;top:${elInfo.top-thisPageStart}px`;
-          wrapper.innerHTML=elInfo.html;
-          inner.appendChild(wrapper);
-        });
-        // set height of inner to content of this page
-        const lastIdx=indices[indices.length-1];
-        const lastEl=elOffsets[lastIdx];
-        area.style.position="absolute";
-        area.style.top=ptPx+"px";
-        area.appendChild(inner);
-      }
-
-      card.appendChild(area);
       if(pi>0){
-        const plbl=document.createElement("div");
-        plbl.style.cssText="position:absolute;top:8px;right:10px;font-size:10px;font-family:'JetBrains Mono';color:var(--muted);opacity:.45";
-        plbl.textContent="p."+(pi+1);
-        card.appendChild(plbl);
+        const lbl=document.createElement("div");
+        lbl.style.cssText="position:absolute;top:8px;right:10px;"
+          +"font-size:10px;font-family:'JetBrains Mono';color:var(--muted);opacity:.45";
+        lbl.textContent="p."+(pi+1);
+        card.appendChild(lbl);
       }
       container.appendChild(card);
     });
 
     const lbl=$("zoomLabel"); if(lbl) lbl.textContent=Math.round(scale*100)+"%";
     const plbl=$("previewPageLabel");
-    if(plbl) plbl.textContent=pageSize==="Custom"?pageSizeCustomW+"×"+pageSizeCustomH+" mm":(PAGE_SIZES[pageSize]?.label||pageSize);
+    if(plbl) plbl.textContent=pageSize==="Custom"?`${pageSizeCustomW}×${pageSizeCustomH} mm`:(PAGE_SIZES[pageSize]?.label||pageSize);
   }
 
   function updatePreview(){
