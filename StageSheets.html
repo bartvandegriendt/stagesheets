@@ -30,6 +30,18 @@
   .top .sub{color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase;margin-top:3px}
   .top .spacer{flex:1}
   .iconbtn{background:var(--bg3);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:8px 12px;cursor:pointer;font-family:"Barlow";font-size:13px;font-weight:600;display:inline-flex;gap:7px;align-items:center;transition:.15s;text-decoration:none}
+  .cl-modal{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6);animation:fadeUp .18s ease}
+  .cl-box{background:var(--bg2);border:1px solid var(--line);border-radius:16px;width:min(520px,92vw);max-height:80vh;display:flex;flex-direction:column;box-shadow:0 12px 48px rgba(0,0,0,.7);overflow:hidden}
+  .cl-head{display:flex;align-items:center;padding:16px 20px;border-bottom:1px solid var(--line);gap:10px}
+  .cl-head h2{flex:1;font-family:"Bebas Neue";font-size:22px;letter-spacing:1px;color:var(--text);margin:0}
+  .cl-close{background:none;border:1px solid var(--line);border-radius:8px;color:var(--muted);cursor:pointer;padding:4px 10px;font-size:16px}
+  .cl-body{overflow:auto;padding:14px 20px 6px;flex:1}
+  .cl-entry{padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+  .cl-entry:last-child{border-bottom:none}
+  .cl-ver{font-family:"JetBrains Mono";font-size:11px;color:var(--amber);font-weight:700;margin-bottom:3px}
+  .cl-msg{font-size:13.5px;color:var(--text);line-height:1.5}
+  .cl-more{display:block;text-align:center;padding:12px;font-size:12px;color:var(--amber);text-decoration:none;border-top:1px solid var(--line);font-family:"Barlow";font-weight:600}
+  .cl-more:hover{background:var(--bg3)}
   .iconbtn:hover{border-color:var(--amber-dim);color:var(--amber)}
   .wrap{flex:1;display:flex;min-height:0}
   .side{width:300px;flex:0 0 auto;border-right:1px solid var(--line);background:var(--bg2);display:flex;flex-direction:column;min-height:0}
@@ -320,7 +332,7 @@
 <div class="top">
   <div>
     <div class="brand"><span class="dot"></span>STAGE SHEETS</div>
-    <div class="sub">songs &amp; setlists <span style="font-family:'JetBrains Mono';font-size:9px;opacity:.45;letter-spacing:.04em">v3.4.3</span></div>
+    <div class="sub">songs &amp; setlists <span style="font-family:'JetBrains Mono';font-size:9px;opacity:.45;letter-spacing:.04em">v3.4.3</span> <button id="changelogBtn" title="What's new" style="background:none;border:1px solid rgba(255,255,255,.15);border-radius:50%;width:14px;height:14px;color:var(--muted);cursor:pointer;font-size:8px;font-weight:700;line-height:1;padding:0;vertical-align:middle;margin-left:3px">i</button></div>
   </div>
   <div class="spacer"></div>
   <input type="file" id="importFile" accept=".json" style="display:none">
@@ -582,6 +594,41 @@ function renderSplitsHTML(splits){
   if(!splits||!splits.length) return "";
   const svg=renderKeyboardSVG(splits);
   return `<div class="splits-block">${svg}</div>`;
+}
+const CHANGELOG=[
+  {v:"v3.4.3",msg:"Tab title now shows 'Stage Sheets – Song – Artist' in edit view, updates live while typing, restores correctly after printing"},
+  {v:"v3.4.3",msg:"Keyboard splits: individual key colouring per split, opacity slider per split with live preview"},
+  {v:"v3.4.3",msg:"MIDI Learn for keyboard splits — press a Learn button then play two keys to set the split range"},
+  {v:"v3.4.3",msg:"Keyboard splits feature: map instruments to key ranges, visual SVG keyboard strip in editor and perform view"},
+  {v:"v3.4.3",msg:"Page preview: mask top/bottom margins to prevent text bleed-through between pages"},
+  {v:"v3.4.3",msg:"Page preview: fix overlapping text with scroll-clip multi-page approach"},
+  {v:"v3.4.3",msg:"Page preview: keep title/artist/rule header together, fix page split element positioning"},
+  {v:"v3.4.3",msg:"Page preview: element-aware page splitting so no line is clipped mid-character"},
+  {v:"v3.4.3",msg:"Word-style multi-page preview with discrete page cards and grey desk background"},
+  {v:"v3.4.3",msg:"Individual top/right/bottom/left margin controls with preset buttons (None/Narrow/Normal/Wide)"},
+  {v:"v3.4.3",msg:"Fix submenu positioning (flips upward near screen edge), add New song in folder to right-click menu"},
+  {v:"v3.4.3",msg:"Fix mobile sidebar: remove overlay that was permanently dimming the song list on iOS"},
+  {v:"v3.4.3",msg:"Preserve sidebar scroll position when opening a song from the list"},
+  {v:"v3.4.3",msg:"Fix transpose in edit mode (no longer re-renders editor), fix screenshots in README"},
+  {v:"v3.4.3",msg:"Fix resizer drag using delta-based approach with full-screen overlay"},
+  {v:"v3.4.3",msg:"Resizer drag: use pointer capture for reliable cross-browser tracking"},
+  {v:"v3.4.3",msg:"Strip lyrics respects selection; Reflow chords (N per line) replaces Compact; search clear button; default view toggle (Perform/Edit); save stays in current view"},
+  {v:"v3.4.3",msg:"Page size selector (A4/A5/A3/Letter/Custom); scaled page preview with zoom controls; perform view page-on-desk; resizable editor split; print settings slide-up panel"},
+  {v:"v3.4.3",msg:"Sub-setlists with breadcrumb navigation; drag-to-reorder setlists, sub-setlists and songs; Add to setlist from song right-click"},
+  {v:"v2.9.0",msg:"Nested folders (up to 3 levels); drag folders into subfolders; folder right-click menu"},
+];
+function showChangelog(){
+  if($("clModal")) return;
+  const modal=document.createElement("div");
+  modal.id="clModal"; modal.className="cl-modal";
+  modal.innerHTML=`<div class="cl-box">
+    <div class="cl-head"><h2>What's new</h2><button class="cl-close" id="clClose">✕</button></div>
+    <div class="cl-body">${CHANGELOG.map(c=>`<div class="cl-entry"><div class="cl-ver">${c.v}</div><div class="cl-msg">${c.msg}</div></div>`).join("")}</div>
+    <a class="cl-more" href="https://github.com/bartvandegriendt/stagesheets/commits/main/" target="_blank" rel="noopener">View all commits on GitHub →</a>
+  </div>`;
+  document.body.appendChild(modal);
+  modal.onclick=e=>{if(e.target===modal)modal.remove();};
+  $("clClose").onclick=()=>modal.remove();
 }
 const SHARP=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
 const FLAT =["C","Db","D","Eb","E","F","Gb","G","Ab","A","Bb","B"];
@@ -2058,6 +2105,7 @@ document.addEventListener("click",e=>{
   }
 });
 $("helpBtn").onclick=showHelp;
+$("changelogBtn").onclick=showChangelog;
 const dvChk=$("defaultViewChk");
 if(dvChk){dvChk.checked=defaultView==="edit";dvChk.onchange=()=>{defaultView=dvChk.checked?"edit":"perform";persist();};}
 
