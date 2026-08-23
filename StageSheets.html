@@ -320,7 +320,7 @@
 <div class="top">
   <div>
     <div class="brand"><span class="dot"></span>STAGE SHEETS</div>
-    <div class="sub">songs &amp; setlists <span style="font-family:'JetBrains Mono';font-size:9px;opacity:.45;letter-spacing:.04em">v3.4.1</span></div>
+    <div class="sub">songs &amp; setlists <span style="font-family:'JetBrains Mono';font-size:9px;opacity:.45;letter-spacing:.04em">v3.4.2</span></div>
   </div>
   <div class="spacer"></div>
   <input type="file" id="importFile" accept=".json" style="display:none">
@@ -501,67 +501,82 @@ function splitColor(i){return SPLIT_COLORS[i%SPLIT_COLORS.length];}
 function renderKeyboardSVG(splits,width=560){
   if(!splits||!splits.length) return "";
   const MIDI_MIN=36, MIDI_MAX=108; // C2–C8
-  const totalKeys=MIDI_MAX-MIDI_MIN+1;
-  // white key layout
-  const WHITE=[0,2,4,5,7,9,11]; // semitones that are white keys
+  const WHITE=[0,2,4,5,7,9,11];
   function isWhite(midi){return WHITE.includes(midi%12);}
   const whiteKeys=[]; for(let m=MIDI_MIN;m<=MIDI_MAX;m++){if(isWhite(m))whiteKeys.push(m);}
   const wCount=whiteKeys.length;
   const wW=width/wCount, wH=56, bW=wW*0.6, bH=34;
-  const svgH=wH+28; // extra space above for labels
+  const svgH=wH+28;
   const labelY=22;
-  // compute x position of a midi note
+  const BLACK_OFF=[0,0.55,0,0.6,0,0,0.55,0,0.58,0,0.62,0];
   function midiX(midi){
-    const BLACK_OFF=[0,0.55,0,0.6,0,0,0.55,0,0.58,0,0.62,0];
-    if(isWhite(midi)){
-      const wi=whiteKeys.indexOf(midi);
-      return wi*wW;
-    } else {
-      const below=midi-1; const wi=whiteKeys.indexOf(below);
-      return wi*wW+wW-bW*0.5-bW*BLACK_OFF[midi%12];
-    }
+    if(isWhite(midi)) return whiteKeys.indexOf(midi)*wW;
+    const wi=whiteKeys.indexOf(midi-1);
+    return wi*wW+wW-bW*0.5-bW*BLACK_OFF[midi%12];
   }
-  function midiCenterX(midi){
-    return isWhite(midi)?midiX(midi)+wW/2:midiX(midi)+bW/2;
-  }
-  // build white keys
-  let whites="", blacks="", labels="", zones="";
-  whiteKeys.forEach((m,i)=>{
-    whites+=`<rect x="${(i*wW).toFixed(1)}" y="${labelY}" width="${(wW-0.8).toFixed(1)}" height="${wH}" rx="2" fill="#f0ede6" stroke="#aaa" stroke-width=".7"/>`;
-  });
-  // draw split zones on white keys area
+  function midiCenterX(midi){return isWhite(midi)?midiX(midi)+wW/2:midiX(midi)+bW/2;}
+
+  // Build a colour map: midi -> {col, opacity}
+  const keyColor={};
   const validSplits=splits.filter(sp=>sp.from&&sp.to&&validNote(sp.from)&&validNote(sp.to));
   validSplits.forEach((sp,i)=>{
-    const fromM=noteToMidi(sp.from), toM=noteToMidi(sp.to);
-    if(fromM===null||toM===null) return;
+    const fromM=noteToMidi(sp.from), toM=noteToMidi(sp.to); if(!fromM||!toM) return;
     const lo=Math.max(MIDI_MIN,Math.min(fromM,toM));
     const hi=Math.min(MIDI_MAX,Math.max(fromM,toM));
-    // find first/last white key in range for zone width
+    const col=sp.color||splitColor(i);
+    const op=sp.opacity!=null?sp.opacity:0.75;
+    for(let m=lo;m<=hi;m++) keyColor[m]={col,op};
+  });
+
+  // White keys — colour individual keys
+  let whites="";
+  whiteKeys.forEach((m,wi)=>{
+    const x=(wi*wW).toFixed(1), w=(wW-0.8).toFixed(1);
+    if(keyColor[m]){
+      const {col,op}=keyColor[m];
+      // blend: white base + colour overlay
+      whites+=`<rect x="${x}" y="${labelY}" width="${w}" height="${wH}" rx="2" fill="#f0ede6" stroke="#aaa" stroke-width=".7"/>`;
+      whites+=`<rect x="${x}" y="${labelY}" width="${w}" height="${wH}" rx="2" fill="${col}" opacity="${op}" stroke="#aaa" stroke-width=".7"/>`;
+    } else {
+      whites+=`<rect x="${x}" y="${labelY}" width="${w}" height="${wH}" rx="2" fill="#f0ede6" stroke="#aaa" stroke-width=".7"/>`;
+    }
+  });
+
+  // Black keys — colour individually, darker shade
+  let blacks="";
+  for(let m=MIDI_MIN;m<=MIDI_MAX;m++){
+    if(!isWhite(m)){
+      const x=midiX(m).toFixed(1), w=bW.toFixed(1);
+      if(keyColor[m]){
+        const {col,op}=keyColor[m];
+        blacks+=`<rect x="${x}" y="${labelY}" width="${w}" height="${bH}" rx="1.5" fill="${col}" opacity="${Math.min(1,op+0.15)}" stroke="#000" stroke-width=".5"/>`;
+        blacks+=`<rect x="${x}" y="${labelY}" width="${w}" height="${bH}" rx="1.5" fill="none" stroke="#000" stroke-width=".5"/>`;
+      } else {
+        blacks+=`<rect x="${x}" y="${labelY}" width="${w}" height="${bH}" rx="1.5" fill="#1a1408" stroke="#000" stroke-width=".5"/>`;
+      }
+    }
+  }
+
+  // Labels above and below
+  let labels="";
+  validSplits.forEach((sp,i)=>{
+    const fromM=noteToMidi(sp.from), toM=noteToMidi(sp.to); if(!fromM||!toM) return;
+    const lo=Math.max(MIDI_MIN,Math.min(fromM,toM));
+    const hi=Math.min(MIDI_MAX,Math.max(fromM,toM));
     let x1=null,x2=null;
-    for(let m2=lo;m2<=hi;m2++){
-      if(isWhite(m2)){const x=midiX(m2);if(x1===null)x1=x;x2=x+wW;}
+    for(let m=lo;m<=hi;m++){
+      if(isWhite(m)){const x=midiX(m);if(x1===null)x1=x;x2=x+wW;}
     }
     if(x1===null){x1=midiCenterX(lo)-bW/2;x2=midiCenterX(hi)+bW/2;}
     const col=sp.color||splitColor(i);
-    zones+=`<rect x="${x1.toFixed(1)}" y="${labelY}" width="${(x2-x1).toFixed(1)}" height="${wH}" fill="${col}" opacity=".35" rx="1"/>`;
-    // label above
     const cx=((x1+x2)/2).toFixed(1);
-    const lw=Math.max(60,x2-x1-4);
-    labels+=`<text x="${cx}" y="${(labelY-5).toFixed(1)}" text-anchor="middle" font-size="10" font-family="Barlow,sans-serif" font-weight="600" fill="${col}" clip-path="url(#lc${i})">${esc(sp.instrument||"—")}</text>`;
     labels+=`<clipPath id="lc${i}"><rect x="${x1.toFixed(1)}" y="0" width="${(x2-x1).toFixed(1)}" height="${labelY}"/></clipPath>`;
-    // range label below keyboard
-    const rangeLabel=`${sp.from}–${sp.to}`;
-    labels+=`<text x="${cx}" y="${(labelY+wH+11).toFixed(1)}" text-anchor="middle" font-size="8.5" font-family="JetBrains Mono,monospace" fill="${col}" opacity=".8">${rangeLabel}</text>`;
+    labels+=`<text x="${cx}" y="${(labelY-5).toFixed(1)}" text-anchor="middle" font-size="10" font-family="Barlow,sans-serif" font-weight="700" fill="${col}" clip-path="url(#lc${i})">${esc(sp.instrument||"—")}</text>`;
+    labels+=`<text x="${cx}" y="${(labelY+wH+11).toFixed(1)}" text-anchor="middle" font-size="8.5" font-family="JetBrains Mono,monospace" fill="${col}" opacity=".9">${sp.from}–${sp.to}</text>`;
   });
-  // black keys on top
-  for(let m=MIDI_MIN;m<=MIDI_MAX;m++){
-    if(!isWhite(m)){
-      const x=midiX(m);
-      blacks+=`<rect x="${x.toFixed(1)}" y="${labelY}" width="${bW.toFixed(1)}" height="${bH}" rx="1.5" fill="#1a1408" stroke="#000" stroke-width=".5"/>`;
-    }
-  }
+
   return `<svg viewBox="0 0 ${width} ${svgH}" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:${width}px;height:auto;display:block">`
-    +zones+whites+blacks+labels+`</svg>`;
+    +whites+blacks+labels+`</svg>`;
 }
 function renderSplitsHTML(splits){
   if(!splits||!splits.length) return "";
@@ -1664,6 +1679,10 @@ function renderSplitsEditor(splits){
       <span style="color:var(--muted);font-size:13px;padding:0 2px">→</span>
       <input class="split-note" placeholder="B3" value="${esc(sp.to||"")}" data-field="to" style="${noteInputStyle()}">
       <input class="split-name" placeholder="Instrument / patch name" value="${esc(sp.instrument||"")}" style="flex:1;background:var(--bg2);border:1px solid var(--line);border-radius:9px;color:var(--text);padding:8px 11px;font-family:'Barlow';font-size:14px;outline:none">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex:0 0 auto">
+        <input type="range" class="split-opacity" min="0.1" max="1" step="0.05" value="${sp.opacity!=null?sp.opacity:0.75}" style="width:64px;accent-color:${sp.color||splitColor(i)}">
+        <span class="split-opacity-lbl" style="font-size:9px;color:var(--muted);font-family:'JetBrains Mono'">${Math.round((sp.opacity!=null?sp.opacity:0.75)*100)}%</span>
+      </div>
       <button class="split-learn" data-split-i="${i}" title="MIDI Learn: press first then last key" style="background:var(--bg3);border:1px solid var(--line);border-radius:7px;color:var(--muted);cursor:pointer;padding:6px 10px;font-size:12px;font-weight:600;font-family:'Barlow';white-space:nowrap;min-width:60px">🎹 Learn</button>
       <button class="split-del" data-split-i="${i}" title="Remove" style="background:none;border:1px solid var(--line);border-radius:7px;color:var(--muted);cursor:pointer;padding:6px 10px;font-size:14px">🗑</button>
     </div>`).join("");
@@ -1745,6 +1764,13 @@ function wireSplitRows(s){
       };
     });
     row.querySelector(".split-name").oninput=e=>{s.splits[i].instrument=e.target.value;persist();refreshSplitsPreview(s);};
+    row.querySelector(".split-opacity").oninput=e=>{
+      const v=parseFloat(e.target.value);
+      s.splits[i].opacity=v;
+      const lbl=row.querySelector(".split-opacity-lbl");
+      if(lbl) lbl.textContent=Math.round(v*100)+"%";
+      persist(); refreshSplitsPreview(s);
+    };
     row.querySelector(".split-learn").onclick=e=>startMidiLearn(i,e.currentTarget,s);
     row.querySelector(".split-del").onclick=()=>{
       if(_midiListening&&_midiLearnIdx===i) stopMidiLearn(null);
