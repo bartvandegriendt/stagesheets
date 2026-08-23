@@ -332,7 +332,7 @@
 <div class="top">
   <div>
     <div class="brand"><span class="dot"></span>STAGE SHEETS</div>
-    <div class="sub">songs &amp; setlists <span style="font-family:'JetBrains Mono';font-size:9px;opacity:.45;letter-spacing:.04em">v3.4.4</span> <button id="changelogBtn" title="What's new" style="background:none;border:1px solid rgba(255,255,255,.15);border-radius:50%;width:14px;height:14px;color:var(--muted);cursor:pointer;font-size:8px;font-weight:700;line-height:1;padding:0;vertical-align:middle;margin-left:3px">i</button></div>
+    <div class="sub">songs &amp; setlists <span style="font-family:'JetBrains Mono';font-size:9px;opacity:.45;letter-spacing:.04em">v3.4.5</span> <button id="changelogBtn" title="What's new" style="background:none;border:1px solid rgba(255,255,255,.15);border-radius:50%;width:14px;height:14px;color:var(--muted);cursor:pointer;font-size:8px;font-weight:700;line-height:1;padding:0;vertical-align:middle;margin-left:3px">i</button></div>
   </div>
   <div class="spacer"></div>
   <input type="file" id="importFile" accept=".json" style="display:none">
@@ -605,25 +605,25 @@ function renderSplitsHTML(splits){
   return `<div class="splits-block">${svg}</div>`;
 }
 const CHANGELOG=[
-  {v:"v3.4.4",msg:"Tab title now shows 'Stage Sheets – Song – Artist' in edit view, updates live while typing, restores correctly after printing"},
-  {v:"v3.4.4",msg:"Keyboard splits: individual key colouring per split, opacity slider per split with live preview"},
-  {v:"v3.4.4",msg:"MIDI Learn for keyboard splits — press a Learn button then play two keys to set the split range"},
-  {v:"v3.4.4",msg:"Keyboard splits feature: map instruments to key ranges, visual SVG keyboard strip in editor and perform view"},
-  {v:"v3.4.4",msg:"Page preview: mask top/bottom margins to prevent text bleed-through between pages"},
-  {v:"v3.4.4",msg:"Page preview: fix overlapping text with scroll-clip multi-page approach"},
-  {v:"v3.4.4",msg:"Page preview: keep title/artist/rule header together, fix page split element positioning"},
-  {v:"v3.4.4",msg:"Page preview: element-aware page splitting so no line is clipped mid-character"},
-  {v:"v3.4.4",msg:"Word-style multi-page preview with discrete page cards and grey desk background"},
-  {v:"v3.4.4",msg:"Individual top/right/bottom/left margin controls with preset buttons (None/Narrow/Normal/Wide)"},
-  {v:"v3.4.4",msg:"Fix submenu positioning (flips upward near screen edge), add New song in folder to right-click menu"},
-  {v:"v3.4.4",msg:"Fix mobile sidebar: remove overlay that was permanently dimming the song list on iOS"},
-  {v:"v3.4.4",msg:"Preserve sidebar scroll position when opening a song from the list"},
-  {v:"v3.4.4",msg:"Fix transpose in edit mode (no longer re-renders editor), fix screenshots in README"},
-  {v:"v3.4.4",msg:"Fix resizer drag using delta-based approach with full-screen overlay"},
-  {v:"v3.4.4",msg:"Resizer drag: use pointer capture for reliable cross-browser tracking"},
-  {v:"v3.4.4",msg:"Strip lyrics respects selection; Reflow chords (N per line) replaces Compact; search clear button; default view toggle (Perform/Edit); save stays in current view"},
-  {v:"v3.4.4",msg:"Page size selector (A4/A5/A3/Letter/Custom); scaled page preview with zoom controls; perform view page-on-desk; resizable editor split; print settings slide-up panel"},
-  {v:"v3.4.4",msg:"Sub-setlists with breadcrumb navigation; drag-to-reorder setlists, sub-setlists and songs; Add to setlist from song right-click"},
+  {v:"v3.4.5",msg:"Tab title now shows 'Stage Sheets – Song – Artist' in edit view, updates live while typing, restores correctly after printing"},
+  {v:"v3.4.5",msg:"Keyboard splits: individual key colouring per split, opacity slider per split with live preview"},
+  {v:"v3.4.5",msg:"MIDI Learn for keyboard splits — press a Learn button then play two keys to set the split range"},
+  {v:"v3.4.5",msg:"Keyboard splits feature: map instruments to key ranges, visual SVG keyboard strip in editor and perform view"},
+  {v:"v3.4.5",msg:"Page preview: mask top/bottom margins to prevent text bleed-through between pages"},
+  {v:"v3.4.5",msg:"Page preview: fix overlapping text with scroll-clip multi-page approach"},
+  {v:"v3.4.5",msg:"Page preview: keep title/artist/rule header together, fix page split element positioning"},
+  {v:"v3.4.5",msg:"Page preview: element-aware page splitting so no line is clipped mid-character"},
+  {v:"v3.4.5",msg:"Word-style multi-page preview with discrete page cards and grey desk background"},
+  {v:"v3.4.5",msg:"Individual top/right/bottom/left margin controls with preset buttons (None/Narrow/Normal/Wide)"},
+  {v:"v3.4.5",msg:"Fix submenu positioning (flips upward near screen edge), add New song in folder to right-click menu"},
+  {v:"v3.4.5",msg:"Fix mobile sidebar: remove overlay that was permanently dimming the song list on iOS"},
+  {v:"v3.4.5",msg:"Preserve sidebar scroll position when opening a song from the list"},
+  {v:"v3.4.5",msg:"Fix transpose in edit mode (no longer re-renders editor), fix screenshots in README"},
+  {v:"v3.4.5",msg:"Fix resizer drag using delta-based approach with full-screen overlay"},
+  {v:"v3.4.5",msg:"Resizer drag: use pointer capture for reliable cross-browser tracking"},
+  {v:"v3.4.5",msg:"Strip lyrics respects selection; Reflow chords (N per line) replaces Compact; search clear button; default view toggle (Perform/Edit); save stays in current view"},
+  {v:"v3.4.5",msg:"Page size selector (A4/A5/A3/Letter/Custom); scaled page preview with zoom controls; perform view page-on-desk; resizable editor split; print settings slide-up panel"},
+  {v:"v3.4.5",msg:"Sub-setlists with breadcrumb navigation; drag-to-reorder setlists, sub-setlists and songs; Add to setlist from song right-click"},
   {v:"v2.9.0",msg:"Nested folders (up to 3 levels); drag folders into subfolders; folder right-click menu"},
 ];
 function showChangelog(){
@@ -684,7 +684,7 @@ function renderBody(text,s,f){
 let songs=[], setlists=[], folders=[], theme="dark", printTheme="light", printMargin="normal", printPadding="normal", marginTop=18, marginBottom=18, marginLeft=18, marginRight=18, pdfOrder="artist-title", pageSize="A4", pageSizeCustomW=210, pageSizeCustomH=297, previewSplit=50, previewZoom=0, showPreview=true;
 let tab="songs", openSetId=null, picking=false;
 let context={type:"library",setId:null};
-let currentId=null, view="perform", defaultView="perform";
+let currentId=null, view="perform", defaultView="perform", showMetaFields=true;
 let transpose=0, flats=false, sheetSize=18, filter="";
 let sortBy="title", showArchived=false;
 let collapsedFolders=new Set(); // folder IDs that are collapsed
@@ -696,11 +696,11 @@ const setById=id=>setlists.find(s=>s.id===id);
 const folderById=id=>folders.find(f=>f.id===id);
 const ugUrl=(t,a)=>"https://www.ultimate-guitar.com/search.php?search_type=title&value="+encodeURIComponent([t||"",a||""].filter(Boolean).join(" "));
 function persist(){ DB.save(buildPayload()); }
-function buildPayload(){ return {songs,setlists,folders,theme,printTheme,printMargin,printPadding,pdfOrder,pageSize,pageSizeCustomW,pageSizeCustomH,previewSplit,previewZoom,showPreview,defaultView,marginTop,marginBottom,marginLeft,marginRight,saved:new Date().toISOString()}; }
+function buildPayload(){ return {songs,setlists,folders,theme,printTheme,printMargin,printPadding,pdfOrder,pageSize,pageSizeCustomW,pageSizeCustomH,previewSplit,previewZoom,showPreview,defaultView,marginTop,marginBottom,marginLeft,marginRight,showMetaFields,saved:new Date().toISOString()}; }
 function loadFromData(d){
   songs=d.songs||[]; setlists=d.setlists||[]; folders=d.folders||[];
   theme=d.theme||"dark"; printTheme=d.printTheme||"light";
-  printMargin=d.printMargin||"normal"; printPadding=d.printPadding||"normal"; pdfOrder=d.pdfOrder||"artist-title"; marginTop=d.marginTop??18; marginBottom=d.marginBottom??18; marginLeft=d.marginLeft??18; marginRight=d.marginRight??18;
+  printMargin=d.printMargin||"normal"; printPadding=d.printPadding||"normal"; pdfOrder=d.pdfOrder||"artist-title"; marginTop=d.marginTop??18; marginBottom=d.marginBottom??18; marginLeft=d.marginLeft??18; marginRight=d.marginRight??18; showMetaFields=d.showMetaFields!==false;
   pageSize=d.pageSize||"A4"; pageSizeCustomW=d.pageSizeCustomW||210; pageSizeCustomH=d.pageSizeCustomH||297; previewSplit=d.previewSplit||50; previewZoom=d.previewZoom||0; showPreview=d.showPreview!==false; defaultView=d.defaultView||"perform";
   currentId=songs.filter(s=>!s.archived)[0]?.id||null;
   context={type:"library",setId:null}; transpose=0;
@@ -1343,15 +1343,18 @@ function renderEditor(s){
 
     <!-- TOP: meta fields -->
     <div class="ed-top">
-      <div class="fields">
+      <div class="fields" style="align-items:center">
         <div class="field"><label>Song title</label><input id="fTitle" value="${esc(s.title||"")}" placeholder="e.g. Africa"></div>
         <div class="field"><label>Artist</label><input id="fArtist" value="${esc(s.artist||"")}" placeholder="e.g. Toto"></div>
+        <button id="metaToggle" title="${showMetaFields?"Hide":"Show"} Key / Capo / Tempo" style="flex:0 0 auto;align-self:flex-end;background:none;border:1px solid var(--line);border-radius:8px;color:var(--muted);cursor:pointer;padding:6px 9px;font-size:11px;font-family:'Barlow';font-weight:600;white-space:nowrap;margin-bottom:1px">${showMetaFields?"▲ Less":"▼ Key / Capo / Tempo"}</button>
       </div>
-      <div class="quad">
-        <div class="field"><label>Key</label><input id="fKey" value="${esc(s.key||"")}" placeholder="A"></div>
-        <div class="field"><label>Capo</label><input id="fCapo" value="${esc(s.capo||"")}" placeholder="2"></div>
-        <div class="field"><label>Tempo</label><input id="fTempo" value="${esc(s.tempo||"")}" placeholder="93"></div>
-        <div class="field"><label>&nbsp;</label><a class="ugbtn" id="ugEdit" href="${ugUrl(s.title,s.artist)}" target="_blank" rel="noopener">🔎 Find chords</a></div>
+      <div id="metaFields" style="${showMetaFields?"":"display:none"}">
+        <div class="quad" style="margin-top:8px">
+          <div class="field"><label>Key</label><input id="fKey" value="${esc(s.key||"")}" placeholder="A"></div>
+          <div class="field"><label>Capo</label><input id="fCapo" value="${esc(s.capo||"")}" placeholder="2"></div>
+          <div class="field"><label>Tempo</label><input id="fTempo" value="${esc(s.tempo||"")}" placeholder="93"></div>
+          <div class="field"><label>&nbsp;</label><a class="ugbtn" id="ugEdit" href="${ugUrl(s.title,s.artist)}" target="_blank" rel="noopener">🔎 Find chords</a></div>
+        </div>
       </div>
     </div>
 
@@ -1473,7 +1476,14 @@ function renderEditor(s){
 
   </div></div>`;
   wireToolbar(s);
-  const upd=()=>{$("ugEdit").href=ugUrl($("fTitle").value,$("fArtist").value);};
+  // meta fields toggle
+  $("metaToggle").onclick=()=>{
+    showMetaFields=!showMetaFields;
+    const mf=$("metaFields"); if(mf) mf.style.display=showMetaFields?"":"none";
+    $("metaToggle").textContent=showMetaFields?"▲ Less":"▼ Key / Capo / Tempo";
+    persist();
+  };
+  const upd=()=>{const ug=$("ugEdit");if(ug)ug.href=ugUrl($("fTitle").value,$("fArtist").value);};
   // resizer drag
   // resizer drag — delta based, overlay captures all events
   const resizer=$("edResizer"), mid=$("edMid");
@@ -2126,7 +2136,7 @@ document.addEventListener("keydown",e=>{const tag=(e.target.tagName||"").toLower
     case "]":sheetSize=Math.min(42,sheetSize+1);renderMain();break; case "[":sheetSize=Math.max(11,sheetSize-1);renderMain();break;
   }});
 
-(async function init(){const d=await DB.load();if(d){songs=d.songs||[];setlists=d.setlists||[];folders=d.folders||[];theme=d.theme||"dark";printTheme=d.printTheme||"light";printMargin=d.printMargin||"normal";printPadding=d.printPadding||"normal";pdfOrder=d.pdfOrder||"artist-title";marginTop=d.marginTop??18;marginBottom=d.marginBottom??18;marginLeft=d.marginLeft??18;marginRight=d.marginRight??18;pageSize=d.pageSize||"A4";pageSizeCustomW=d.pageSizeCustomW||210;pageSizeCustomH=d.pageSizeCustomH||297;previewSplit=d.previewSplit||50;previewZoom=d.previewZoom||0;showPreview=d.showPreview!==false;defaultView=d.defaultView||"perform";}
+(async function init(){const d=await DB.load();if(d){songs=d.songs||[];setlists=d.setlists||[];folders=d.folders||[];theme=d.theme||"dark";printTheme=d.printTheme||"light";printMargin=d.printMargin||"normal";printPadding=d.printPadding||"normal";pdfOrder=d.pdfOrder||"artist-title";marginTop=d.marginTop??18;marginBottom=d.marginBottom??18;marginLeft=d.marginLeft??18;marginRight=d.marginRight??18;showMetaFields=d.showMetaFields!==false;pageSize=d.pageSize||"A4";pageSizeCustomW=d.pageSizeCustomW||210;pageSizeCustomH=d.pageSizeCustomH||297;previewSplit=d.previewSplit||50;previewZoom=d.previewZoom||0;showPreview=d.showPreview!==false;defaultView=d.defaultView||"perform";}
   if(!songs.length){songs=[{id:uid(),title:"Demo — delete me",artist:"How it renders",key:"C",capo:"0",tempo:"100",transpose:0,
     chords:"# Part One\n[Intro]\nC        G        Am       F\n\n[Verse]\nC                 G\nThis is a placeholder lyric line\nAm                F\nchords sit right above the words\n\n## A louder section\n[Chorus]\nF     G      C        Am\n{red:watch the modulation here}\nF     G      C\npaste real chords over this",updated:Date.now()}];}
   currentId=songs[0].id;
