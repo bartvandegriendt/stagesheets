@@ -332,7 +332,7 @@
 <div class="top">
   <div>
     <div class="brand"><span class="dot"></span>STAGE SHEETS</div>
-    <div class="sub">songs &amp; setlists <span style="font-family:'JetBrains Mono';font-size:9px;opacity:.45;letter-spacing:.04em">v3.5.0</span> <button id="changelogBtn" title="What's new" style="background:none;border:1px solid rgba(255,255,255,.15);border-radius:50%;width:14px;height:14px;color:var(--muted);cursor:pointer;font-size:8px;font-weight:700;line-height:1;padding:0;vertical-align:middle;margin-left:3px">i</button></div>
+    <div class="sub">songs &amp; setlists <span style="font-family:'JetBrains Mono';font-size:9px;opacity:.45;letter-spacing:.04em">v3.5.1</span> <button id="changelogBtn" title="What's new" style="background:none;border:1px solid rgba(255,255,255,.15);border-radius:50%;width:14px;height:14px;color:var(--muted);cursor:pointer;font-size:8px;font-weight:700;line-height:1;padding:0;vertical-align:middle;margin-left:3px">i</button></div>
   </div>
   <div class="spacer"></div>
   <input type="file" id="importFile" accept=".json" style="display:none">
@@ -510,8 +510,9 @@ const SPLIT_COLORS=["#5b9bd5","#5fb56b","#f3b34c","#e2574c","#b07fe0","#74b9c6",
 function splitColor(i){return SPLIT_COLORS[i%SPLIT_COLORS.length];}
 
 /* ── keyboard SVG renderer ── */
-function renderKeyboardSVG(splits,width=560){
+function renderKeyboardSVG(splits,width=560,idPrefix=""){
   if(!splits||!splits.length) return "";
+  const pfx=idPrefix||("kb"+Math.random().toString(36).slice(2,7));
   const MIDI_MIN=36, MIDI_MAX=108; // C2–C8
   const WHITE=[0,2,4,5,7,9,11];
   function isWhite(midi){return WHITE.includes(midi%12);}
@@ -589,11 +590,11 @@ function renderKeyboardSVG(splits,width=560){
     const cx=((x1+x2)/2).toFixed(1);
     const zoneW=(x2-x1).toFixed(1);
     // instrument label above keyboard — clipped to zone width
-    labels+=`<clipPath id="lc${i}"><rect x="${x1.toFixed(1)}" y="0" width="${zoneW}" height="${labelY}"/></clipPath>`;
-    labels+=`<text x="${cx}" y="${(labelY-6).toFixed(1)}" text-anchor="middle" font-size="10" font-family="Barlow,sans-serif" font-weight="700" fill="${col}" clip-path="url(#lc${i})">${esc(sp.instrument||"—")}</text>`;
+    labels+=`<clipPath id="${pfx}lc${i}"><rect x="${x1.toFixed(1)}" y="0" width="${zoneW}" height="${labelY}"/></clipPath>`;
+    labels+=`<text x="${cx}" y="${(labelY-6).toFixed(1)}" text-anchor="middle" font-size="10" font-family="Barlow,sans-serif" font-weight="700" fill="${col}" clip-path="url(#${pfx}lc${i})">${esc(sp.instrument||"—")}</text>`;
     // range label below keyboard — clipped so it doesn't overlap neighbours
-    labels+=`<clipPath id="rc${i}"><rect x="${x1.toFixed(1)}" y="${(labelY+wH).toFixed(1)}" width="${zoneW}" height="${rangeTextH}"/></clipPath>`;
-    labels+=`<text x="${cx}" y="${(labelY+wH+11).toFixed(1)}" text-anchor="middle" font-size="8.5" font-family="JetBrains Mono,monospace" fill="${col}" opacity=".9" clip-path="url(#rc${i})">${sp.from}–${sp.to}</text>`;
+    labels+=`<clipPath id="${pfx}rc${i}"><rect x="${x1.toFixed(1)}" y="${(labelY+wH).toFixed(1)}" width="${zoneW}" height="${rangeTextH}"/></clipPath>`;
+    labels+=`<text x="${cx}" y="${(labelY+wH+11).toFixed(1)}" text-anchor="middle" font-size="8.5" font-family="JetBrains Mono,monospace" fill="${col}" opacity=".9" clip-path="url(#${pfx}rc${i})">${sp.from}–${sp.to}</text>`;
   });
 
   return `<svg viewBox="0 0 ${width} ${svgH}" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:${width}px;height:auto;display:block">`
@@ -616,32 +617,32 @@ function renderSplitsHTML(scenes){
   if(!scenes||!scenes.length) return "";
   const valid=scenes.filter(sc=>sc.splits.some(sp=>sp.from&&sp.to&&validNote(sp.from)&&validNote(sp.to)));
   if(!valid.length) return "";
-  return valid.map(sc=>`<div class="splits-block">
+  return valid.map((sc,i)=>`<div class="splits-block">
     ${scenes.length>1?`<div style="font-size:11px;font-weight:700;color:var(--amber);font-family:'Barlow';letter-spacing:.05em;margin-bottom:6px;text-transform:uppercase">${esc(sc.name||"Scene")}</div>`:""}
-    ${renderKeyboardSVG(sc.splits)}
+    ${renderKeyboardSVG(sc.splits,560,"p"+i+"_")}
   </div>`).join("");
 }
 const CHANGELOG=[
-  {v:"v3.5.0",msg:"Collapsible split entry rows — keyboard SVG always visible, rows toggle with ▲/▼. Also added collapsible Key/Capo/Tempo row."},
-  {v:"v3.5.0",msg:"Collapsible Key / Capo / Tempo / Find chords row in editor — toggle with ▼ button, persisted to data file"},
-  {v:"v3.5.0",msg:"Fix keyboard split label centering and range text clipping below keyboard"},
-  {v:"v3.5.0",msg:"Tab title shows 'Stage Sheets – Song – Artist' in edit view, updates live, restores correctly after printing. Changelog modal with info button."},
-  {v:"v3.5.0",msg:"Keyboard splits: individual key colouring per split, opacity slider with live preview"},
-  {v:"v3.5.0",msg:"MIDI Learn for keyboard splits — press Learn then play two keys to set the split range"},
-  {v:"v3.5.0",msg:"Keyboard splits: map instruments to key ranges, visual SVG keyboard strip in editor and perform view"},
-  {v:"v3.5.0",msg:"Page preview: mask top/bottom margins to prevent text bleed-through between pages"},
-  {v:"v3.5.0",msg:"Page preview: fix overlapping text with scroll-clip multi-page approach"},
-  {v:"v3.5.0",msg:"Page preview: keep title/artist/rule header together, fix page split element positioning"},
-  {v:"v3.5.0",msg:"Page preview: element-aware page splitting so no line is clipped mid-character"},
-  {v:"v3.5.0",msg:"Word-style multi-page preview with discrete page cards and grey desk background"},
-  {v:"v3.5.0",msg:"Individual top/right/bottom/left margin controls with preset buttons (None/Narrow/Normal/Wide)"},
-  {v:"v3.5.0",msg:"Fix submenu positioning (flips upward near screen edge), add New song in folder to right-click menu"},
-  {v:"v3.5.0",msg:"Fix mobile sidebar: remove overlay that was permanently dimming the song list on iOS"},
-  {v:"v3.5.0",msg:"Preserve sidebar scroll position when opening a song from the list"},
-  {v:"v3.5.0",msg:"Fix transpose in edit mode (no longer re-renders editor), fix screenshots in README"},
-  {v:"v3.5.0",msg:"Fix resizer drag using delta-based approach with full-screen overlay"},
-  {v:"v3.5.0",msg:"Resizer drag: use pointer capture for reliable cross-browser tracking"},
-  {v:"v3.5.0",msg:"Strip lyrics respects selection; Reflow chords (N per line); search clear button; default view toggle; save stays in current view"},
+  {v:"v3.5.1",msg:"Collapsible split entry rows — keyboard SVG always visible, rows toggle with ▲/▼. Also added collapsible Key/Capo/Tempo row."},
+  {v:"v3.5.1",msg:"Collapsible Key / Capo / Tempo / Find chords row in editor — toggle with ▼ button, persisted to data file"},
+  {v:"v3.5.1",msg:"Fix keyboard split label centering and range text clipping below keyboard"},
+  {v:"v3.5.1",msg:"Tab title shows 'Stage Sheets – Song – Artist' in edit view, updates live, restores correctly after printing. Changelog modal with info button."},
+  {v:"v3.5.1",msg:"Keyboard splits: individual key colouring per split, opacity slider with live preview"},
+  {v:"v3.5.1",msg:"MIDI Learn for keyboard splits — press Learn then play two keys to set the split range"},
+  {v:"v3.5.1",msg:"Keyboard splits: map instruments to key ranges, visual SVG keyboard strip in editor and perform view"},
+  {v:"v3.5.1",msg:"Page preview: mask top/bottom margins to prevent text bleed-through between pages"},
+  {v:"v3.5.1",msg:"Page preview: fix overlapping text with scroll-clip multi-page approach"},
+  {v:"v3.5.1",msg:"Page preview: keep title/artist/rule header together, fix page split element positioning"},
+  {v:"v3.5.1",msg:"Page preview: element-aware page splitting so no line is clipped mid-character"},
+  {v:"v3.5.1",msg:"Word-style multi-page preview with discrete page cards and grey desk background"},
+  {v:"v3.5.1",msg:"Individual top/right/bottom/left margin controls with preset buttons (None/Narrow/Normal/Wide)"},
+  {v:"v3.5.1",msg:"Fix submenu positioning (flips upward near screen edge), add New song in folder to right-click menu"},
+  {v:"v3.5.1",msg:"Fix mobile sidebar: remove overlay that was permanently dimming the song list on iOS"},
+  {v:"v3.5.1",msg:"Preserve sidebar scroll position when opening a song from the list"},
+  {v:"v3.5.1",msg:"Fix transpose in edit mode (no longer re-renders editor), fix screenshots in README"},
+  {v:"v3.5.1",msg:"Fix resizer drag using delta-based approach with full-screen overlay"},
+  {v:"v3.5.1",msg:"Resizer drag: use pointer capture for reliable cross-browser tracking"},
+  {v:"v3.5.1",msg:"Strip lyrics respects selection; Reflow chords (N per line); search clear button; default view toggle; save stays in current view"},
 ];
 function showChangelog(){
   if($("clModal")) return;
@@ -1850,7 +1851,7 @@ function renderAllScenesPreview(s){
     const isActive=i===(s.activeScene||0);
     return `<div style="margin-top:6px;opacity:${isActive?1:0.55}">
       ${scenes.length>1?`<div style="font-size:10px;font-weight:700;color:var(--amber);font-family:'Barlow';letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px">${esc(sc.name||"Scene "+(i+1))}</div>`:""}
-      ${renderKeyboardSVG(sc.splits)}
+      ${renderKeyboardSVG(sc.splits,560,"s"+i+"_")}
     </div>`;
   }).join("");
 }
