@@ -320,7 +320,7 @@
 <div class="top">
   <div>
     <div class="brand"><span class="dot"></span>STAGE SHEETS</div>
-    <div class="sub">songs &amp; setlists <span style="font-family:'JetBrains Mono';font-size:9px;opacity:.45;letter-spacing:.04em">v3.4.2</span></div>
+    <div class="sub">songs &amp; setlists <span style="font-family:'JetBrains Mono';font-size:9px;opacity:.45;letter-spacing:.04em">v3.4.3</span></div>
   </div>
   <div class="spacer"></div>
   <input type="file" id="importFile" accept=".json" style="display:none">
@@ -1281,6 +1281,8 @@ function renderPerform(s){
   wireToolbar(s);
 }
 function renderEditor(s){
+  const artist=(s.artist||"").trim(), title=(s.title||"Untitled").trim();
+  document.title="Stage Sheets"+(title?" – "+title:"")+(artist?" – "+artist:"");
   $("main").innerHTML=nowbar()+toolbar(s)+`<div class="editor"><div class="ed">
 
     <!-- TOP: meta fields -->
@@ -1581,8 +1583,16 @@ function renderEditor(s){
     scalePreview();
   }
   // also update header when meta fields change
-  $("fTitle").oninput=()=>{upd();updatePreview();};
-  $("fArtist").oninput=()=>{upd();updatePreview();};
+  $("fTitle").oninput=()=>{
+    upd();updatePreview();
+    const t=$("fTitle").value.trim(), a=$("fArtist").value.trim();
+    document.title="Stage Sheets"+(t?" – "+t:"")+(a?" – "+a:"");
+  };
+  $("fArtist").oninput=()=>{
+    upd();updatePreview();
+    const t=$("fTitle").value.trim(), a=$("fArtist").value.trim();
+    document.title="Stage Sheets"+(t?" – "+t:"")+(a?" – "+a:"");
+  };
   $("fKey").oninput=updatePreview; $("fCapo").oninput=updatePreview; $("fTempo").oninput=updatePreview;
   // print settings toggle
   const settingsToggle=$("settingsToggle"), settingsPanel=$("edSettingsPanel");
@@ -1968,7 +1978,13 @@ function applyPrintTheme(){
     root.style.removeProperty("--print-padding");
     root.style.removeProperty("--print-page-w");
     root.style.removeProperty("--print-page-h");
-    document.title="Stage Sheets";
+    // restore proper title after PDF save dialog closes
+    const s=songById(currentId);
+    if(s){
+      const t=(s.title||"").trim(), a=(s.artist||"").trim();
+      if(view==="perform") document.title=a?(pdfOrder==="title-artist"?`${t} – ${a}`:`${a} – ${t}`):t;
+      else document.title="Stage Sheets"+(t?" – "+t:"")+(a?" – "+a:"");
+    } else { document.title="Stage Sheets"; }
   };
   window.addEventListener("afterprint",restore,{once:true}); setTimeout(restore,2000);
 }
