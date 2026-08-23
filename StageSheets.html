@@ -320,7 +320,7 @@
 <div class="top">
   <div>
     <div class="brand"><span class="dot"></span>STAGE SHEETS</div>
-    <div class="sub">songs &amp; setlists <span style="font-family:'JetBrains Mono';font-size:9px;opacity:.45;letter-spacing:.04em">v3.4.0</span></div>
+    <div class="sub">songs &amp; setlists <span style="font-family:'JetBrains Mono';font-size:9px;opacity:.45;letter-spacing:.04em">v3.4.1</span></div>
   </div>
   <div class="spacer"></div>
   <input type="file" id="importFile" accept=".json" style="display:none">
@@ -1664,10 +1664,64 @@ function renderSplitsEditor(splits){
       <span style="color:var(--muted);font-size:13px;padding:0 2px">→</span>
       <input class="split-note" placeholder="B3" value="${esc(sp.to||"")}" data-field="to" style="${noteInputStyle()}">
       <input class="split-name" placeholder="Instrument / patch name" value="${esc(sp.instrument||"")}" style="flex:1;background:var(--bg2);border:1px solid var(--line);border-radius:9px;color:var(--text);padding:8px 11px;font-family:'Barlow';font-size:14px;outline:none">
+      <button class="split-learn" data-split-i="${i}" title="MIDI Learn: press first then last key" style="background:var(--bg3);border:1px solid var(--line);border-radius:7px;color:var(--muted);cursor:pointer;padding:6px 10px;font-size:12px;font-weight:600;font-family:'Barlow';white-space:nowrap;min-width:60px">🎹 Learn</button>
       <button class="split-del" data-split-i="${i}" title="Remove" style="background:none;border:1px solid var(--line);border-radius:7px;color:var(--muted);cursor:pointer;padding:6px 10px;font-size:14px">🗑</button>
     </div>`).join("");
 }
 function noteInputStyle(){return "width:52px;background:var(--bg2);border:1px solid var(--line);border-radius:9px;color:var(--text);padding:8px 8px;font-family:'JetBrains Mono';font-size:13px;outline:none;text-align:center";}
+
+/* ── MIDI learn engine ── */
+let _midiAccess=null, _midiListening=false, _midiLearnIdx=-1, _midiLearnFirst=null, _midiLearnSong=null, _midiLearnBtn=null;
+async function initMidi(){
+  if(_midiAccess) return _midiAccess;
+  if(!navigator.requestMIDIAccess){ alert("Web MIDI API not supported in this browser.\nUse Chrome, Edge or Brave."); return null; }
+  try{
+    _midiAccess=await navigator.requestMIDIAccess();
+    _midiAccess.inputs.forEach(inp=>inp.onmidimessage=onMidiMessage);
+    _midiAccess.onstatechange=e=>{ if(e.port.type==="input"&&e.port.state==="connected") e.port.onmidimessage=onMidiMessage; };
+    return _midiAccess;
+  }catch(err){ alert("MIDI access denied: "+err.message); return null; }
+}
+function onMidiMessage(e){
+  if(!_midiListening) return;
+  const [status,note]=e.data;
+  const isNoteOn=(status&0xf0)===0x90&&e.data[2]>0;
+  if(!isNoteOn) return;
+  const noteName=midiToNote(note);
+  if(_midiLearnFirst===null){
+    // first key — store it, update from field visually
+    _midiLearnFirst=note;
+    const s=_midiLearnSong; const i=_midiLearnIdx;
+    s.splits[i].from=noteName;
+    // update input field
+    const row=document.querySelector(`.split-row[data-split-i="${i}"]`);
+    if(row){ const inp=row.querySelector('[data-field="from"]'); if(inp) inp.value=noteName; }
+    // update learn button to show waiting for second key
+    if(_midiLearnBtn){ _midiLearnBtn.textContent="🎹 2nd key…"; _midiLearnBtn.style.background="var(--amber)"; _midiLearnBtn.style.color="#1a1408"; }
+  } else {
+    // second key — determine lo/hi, save, stop learning
+    const lo=Math.min(_midiLearnFirst,note), hi=Math.max(_midiLearnFirst,note);
+    const s=_midiLearnSong; const i=_midiLearnIdx;
+    s.splits[i].from=midiToNote(lo);
+    s.splits[i].to=midiToNote(hi);
+    persist(); stopMidiLearn(s);
+  }
+}
+function stopMidiLearn(s){
+  _midiListening=false; _midiLearnFirst=null;
+  if(_midiLearnBtn){ _midiLearnBtn.textContent="🎹 Learn"; _midiLearnBtn.style.background=""; _midiLearnBtn.style.color=""; }
+  _midiLearnBtn=null; _midiLearnIdx=-1; _midiLearnSong=null;
+  if(s) renderSplitsSection(s);
+}
+async function startMidiLearn(idx,btn,s){
+  if(_midiListening){ stopMidiLearn(s); return; } // toggle off
+  const access=await initMidi(); if(!access) return;
+  _midiListening=true; _midiLearnIdx=idx; _midiLearnFirst=null;
+  _midiLearnSong=s; _midiLearnBtn=btn;
+  btn.textContent="🎹 1st key…";
+  btn.style.background="var(--teal)"; btn.style.color="#fff";
+}
+
 function wireSplitsEditor(s){
   const addBtn=$("addSplitBtn");
   if(addBtn) addBtn.onclick=()=>{
@@ -1691,7 +1745,11 @@ function wireSplitRows(s){
       };
     });
     row.querySelector(".split-name").oninput=e=>{s.splits[i].instrument=e.target.value;persist();refreshSplitsPreview(s);};
-    row.querySelector(".split-del").onclick=()=>{s.splits.splice(i,1);persist();renderSplitsSection(s);};
+    row.querySelector(".split-learn").onclick=e=>startMidiLearn(i,e.currentTarget,s);
+    row.querySelector(".split-del").onclick=()=>{
+      if(_midiListening&&_midiLearnIdx===i) stopMidiLearn(null);
+      s.splits.splice(i,1);persist();renderSplitsSection(s);
+    };
   });
 }
 function refreshSplitsPreview(s){
