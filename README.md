@@ -57,6 +57,7 @@ A self-contained, offline-capable chord sheet and setlist manager built for live
 - Tab title shows `Stage Sheets – Song – Artist`
 
 ### Keyboard splits
+![Use keyboard splits to make them visual on your sheets](screenshots/StageSheets-KeyboardSplits.png)
 - Define up to **8 keyboard zones** per song, each with a note range and instrument/patch name
 - **MIDI Learn** — click Learn, press two keys on your MIDI keyboard to set the range automatically (Chrome/Edge/Brave)
 - Individual **colour picker** and **opacity slider** per split
