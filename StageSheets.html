@@ -332,7 +332,7 @@
 <div class="top">
   <div>
     <div class="brand"><span class="dot"></span>STAGE SHEETS</div>
-    <div class="sub">songs &amp; setlists <span style="font-family:'JetBrains Mono';font-size:9px;opacity:.45;letter-spacing:.04em">v3.4.6</span> <button id="changelogBtn" title="What's new" style="background:none;border:1px solid rgba(255,255,255,.15);border-radius:50%;width:14px;height:14px;color:var(--muted);cursor:pointer;font-size:8px;font-weight:700;line-height:1;padding:0;vertical-align:middle;margin-left:3px">i</button></div>
+    <div class="sub">songs &amp; setlists <span style="font-family:'JetBrains Mono';font-size:9px;opacity:.45;letter-spacing:.04em">v3.5.0</span> <button id="changelogBtn" title="What's new" style="background:none;border:1px solid rgba(255,255,255,.15);border-radius:50%;width:14px;height:14px;color:var(--muted);cursor:pointer;font-size:8px;font-weight:700;line-height:1;padding:0;vertical-align:middle;margin-left:3px">i</button></div>
   </div>
   <div class="spacer"></div>
   <input type="file" id="importFile" accept=".json" style="display:none">
@@ -599,32 +599,49 @@ function renderKeyboardSVG(splits,width=560){
   return `<svg viewBox="0 0 ${width} ${svgH}" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:${width}px;height:auto;display:block">`
     +whites+blacks+labels+`</svg>`;
 }
-function renderSplitsHTML(splits){
-  if(!splits||!splits.length) return "";
-  const svg=renderKeyboardSVG(splits);
-  return `<div class="splits-block">${svg}</div>`;
+function migrateSong(s){
+  // migrate old s.splits → s.scenes[0].splits
+  if(s.splits&&!s.scenes){
+    s.scenes=[{id:uid(),name:"Scene 1",splits:s.splits}];
+    s.activeScene=0;
+    delete s.splits;
+  }
+  if(!s.scenes) s.scenes=[{id:uid(),name:"Scene 1",splits:[]}];
+  if(s.activeScene==null) s.activeScene=0;
+  s.scenes.forEach(sc=>{if(!sc.id)sc.id=uid();if(!sc.splits)sc.splits=[];});
+  return s;
+}
+function activeScene(s){return s.scenes[s.activeScene||0]||s.scenes[0];}
+function renderSplitsHTML(scenes){
+  if(!scenes||!scenes.length) return "";
+  const valid=scenes.filter(sc=>sc.splits.some(sp=>sp.from&&sp.to&&validNote(sp.from)&&validNote(sp.to)));
+  if(!valid.length) return "";
+  return valid.map(sc=>`<div class="splits-block">
+    ${scenes.length>1?`<div style="font-size:11px;font-weight:700;color:var(--amber);font-family:'Barlow';letter-spacing:.05em;margin-bottom:6px;text-transform:uppercase">${esc(sc.name||"Scene")}</div>`:""}
+    ${renderKeyboardSVG(sc.splits)}
+  </div>`).join("");
 }
 const CHANGELOG=[
-  {v:"v3.4.6",msg:"Collapsible split entry rows — keyboard SVG always visible, rows toggle with ▲/▼. Also added collapsible Key/Capo/Tempo row."},
-  {v:"v3.4.5",msg:"Collapsible Key / Capo / Tempo / Find chords row in editor — toggle with ▼ button, persisted to data file"},
-  {v:"v3.4.4",msg:"Fix keyboard split label centering and range text clipping below keyboard"},
-  {v:"v3.4.3",msg:"Tab title shows 'Stage Sheets – Song – Artist' in edit view, updates live, restores correctly after printing. Changelog modal with info button."},
-  {v:"v3.4.2",msg:"Keyboard splits: individual key colouring per split, opacity slider with live preview"},
-  {v:"v3.4.1",msg:"MIDI Learn for keyboard splits — press Learn then play two keys to set the split range"},
-  {v:"v3.4.0",msg:"Keyboard splits: map instruments to key ranges, visual SVG keyboard strip in editor and perform view"},
-  {v:"v3.3.5",msg:"Page preview: mask top/bottom margins to prevent text bleed-through between pages"},
-  {v:"v3.3.4",msg:"Page preview: fix overlapping text with scroll-clip multi-page approach"},
-  {v:"v3.3.3",msg:"Page preview: keep title/artist/rule header together, fix page split element positioning"},
-  {v:"v3.3.2",msg:"Page preview: element-aware page splitting so no line is clipped mid-character"},
-  {v:"v3.3.1",msg:"Word-style multi-page preview with discrete page cards and grey desk background"},
-  {v:"v3.3.0",msg:"Individual top/right/bottom/left margin controls with preset buttons (None/Narrow/Normal/Wide)"},
-  {v:"v3.2.6",msg:"Fix submenu positioning (flips upward near screen edge), add New song in folder to right-click menu"},
-  {v:"v3.2.5",msg:"Fix mobile sidebar: remove overlay that was permanently dimming the song list on iOS"},
-  {v:"v3.2.4",msg:"Preserve sidebar scroll position when opening a song from the list"},
-  {v:"v3.2.3",msg:"Fix transpose in edit mode (no longer re-renders editor), fix screenshots in README"},
-  {v:"v3.2.2",msg:"Fix resizer drag using delta-based approach with full-screen overlay"},
-  {v:"v3.2.1",msg:"Resizer drag: use pointer capture for reliable cross-browser tracking"},
-  {v:"v3.2.0",msg:"Strip lyrics respects selection; Reflow chords (N per line); search clear button; default view toggle; save stays in current view"},
+  {v:"v3.5.0",msg:"Collapsible split entry rows — keyboard SVG always visible, rows toggle with ▲/▼. Also added collapsible Key/Capo/Tempo row."},
+  {v:"v3.5.0",msg:"Collapsible Key / Capo / Tempo / Find chords row in editor — toggle with ▼ button, persisted to data file"},
+  {v:"v3.5.0",msg:"Fix keyboard split label centering and range text clipping below keyboard"},
+  {v:"v3.5.0",msg:"Tab title shows 'Stage Sheets – Song – Artist' in edit view, updates live, restores correctly after printing. Changelog modal with info button."},
+  {v:"v3.5.0",msg:"Keyboard splits: individual key colouring per split, opacity slider with live preview"},
+  {v:"v3.5.0",msg:"MIDI Learn for keyboard splits — press Learn then play two keys to set the split range"},
+  {v:"v3.5.0",msg:"Keyboard splits: map instruments to key ranges, visual SVG keyboard strip in editor and perform view"},
+  {v:"v3.5.0",msg:"Page preview: mask top/bottom margins to prevent text bleed-through between pages"},
+  {v:"v3.5.0",msg:"Page preview: fix overlapping text with scroll-clip multi-page approach"},
+  {v:"v3.5.0",msg:"Page preview: keep title/artist/rule header together, fix page split element positioning"},
+  {v:"v3.5.0",msg:"Page preview: element-aware page splitting so no line is clipped mid-character"},
+  {v:"v3.5.0",msg:"Word-style multi-page preview with discrete page cards and grey desk background"},
+  {v:"v3.5.0",msg:"Individual top/right/bottom/left margin controls with preset buttons (None/Narrow/Normal/Wide)"},
+  {v:"v3.5.0",msg:"Fix submenu positioning (flips upward near screen edge), add New song in folder to right-click menu"},
+  {v:"v3.5.0",msg:"Fix mobile sidebar: remove overlay that was permanently dimming the song list on iOS"},
+  {v:"v3.5.0",msg:"Preserve sidebar scroll position when opening a song from the list"},
+  {v:"v3.5.0",msg:"Fix transpose in edit mode (no longer re-renders editor), fix screenshots in README"},
+  {v:"v3.5.0",msg:"Fix resizer drag using delta-based approach with full-screen overlay"},
+  {v:"v3.5.0",msg:"Resizer drag: use pointer capture for reliable cross-browser tracking"},
+  {v:"v3.5.0",msg:"Strip lyrics respects selection; Reflow chords (N per line); search clear button; default view toggle; save stays in current view"},
 ];
 function showChangelog(){
   if($("clModal")) return;
@@ -698,7 +715,7 @@ const ugUrl=(t,a)=>"https://www.ultimate-guitar.com/search.php?search_type=title
 function persist(){ DB.save(buildPayload()); }
 function buildPayload(){ return {songs,setlists,folders,theme,printTheme,printMargin,printPadding,pdfOrder,pageSize,pageSizeCustomW,pageSizeCustomH,previewSplit,previewZoom,showPreview,defaultView,marginTop,marginBottom,marginLeft,marginRight,showMetaFields,showSplitFields,saved:new Date().toISOString()}; }
 function loadFromData(d){
-  songs=d.songs||[]; setlists=d.setlists||[]; folders=d.folders||[];
+  songs=(d.songs||[]).map(migrateSong); setlists=d.setlists||[]; folders=d.folders||[];
   theme=d.theme||"dark"; printTheme=d.printTheme||"light";
   printMargin=d.printMargin||"normal"; printPadding=d.printPadding||"normal"; pdfOrder=d.pdfOrder||"artist-title"; marginTop=d.marginTop??18; marginBottom=d.marginBottom??18; marginLeft=d.marginLeft??18; marginRight=d.marginRight??18; showMetaFields=d.showMetaFields!==false; showSplitFields=d.showSplitFields!==false;
   pageSize=d.pageSize||"A4"; pageSizeCustomW=d.pageSizeCustomW||210; pageSizeCustomH=d.pageSizeCustomH||297; previewSplit=d.previewSplit||50; previewZoom=d.previewZoom||0; showPreview=d.showPreview!==false; defaultView=d.defaultView||"perform";
@@ -1330,7 +1347,7 @@ function renderPerform(s){
   const pageHpx=Math.round(dims.h*PX);
   const pageBg=printTheme==="dark"?"var(--bg2)":"#f8f6f0";
   const pageStyle=`--page-w-px:${pageWpx}px;--page-h-px:${pageHpx}px;--page-pad-t:${innerPadT}px;--page-pad-b:${innerPadB}px;--page-pad-l:${innerPadL}px;--page-pad-r:${innerPadR}px;--page-bg:${pageBg}`;
-  const splitsHtml=(s.splits&&s.splits.some(sp=>sp.from&&sp.to&&validNote(sp.from)&&validNote(sp.to)))?renderSplitsHTML(s.splits):"";
+  const splitsHtml=(s.scenes&&s.scenes.some(sc=>sc.splits.some(sp=>sp.from&&sp.to&&validNote(sp.from)&&validNote(sp.to))))?renderSplitsHTML(s.scenes):"";
   $("main").innerHTML=nowbar()+toolbar(s)+`<div class="scroll" id="scroll" style="${pageStyle}"><div class="page-wrap"><div class="sheet">
       <h1 class="songtitle">${esc(s.title||"Untitled")}</h1>${s.artist?`<div class="artist">${esc(s.artist)}</div>`:""}
       ${metaInfo(s,transpose)}<div class="rule"></div>${splitsHtml}${body}</div></div></div>`;
@@ -1358,17 +1375,25 @@ function renderEditor(s){
       </div>
     </div>
 
-    <!-- SPLITS: keyboard range editor -->
+    <!-- SPLITS: scene tabs + keyboard editor -->
     <div class="splits-section">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
-        <label style="color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.1em;flex:1">Keyboard splits</label>
-        ${(s.splits||[]).length<8?`<button id="addSplitBtn" style="background:var(--amber);border:none;color:#1a1408;border-radius:7px;padding:4px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Barlow'">+ Add split</button>`:""}
-        <button id="splitFieldsToggle" title="${showSplitFields?"Hide":"Show"} split entries" style="background:none;border:1px solid var(--line);border-radius:8px;color:var(--muted);cursor:pointer;padding:4px 9px;font-size:11px;font-family:'Barlow';font-weight:600;white-space:nowrap">${showSplitFields?"▲":"▼"}</button>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <label style="color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.1em">Keyboard scenes</label>
+        <div style="flex:1;display:flex;gap:4px;flex-wrap:wrap" id="sceneTabs">
+          ${(s.scenes||[]).map((sc,i)=>`<button class="scene-tab ${i===(s.activeScene||0)?"active":""}" data-scene-i="${i}" style="background:${i===(s.activeScene||0)?"var(--amber)":"var(--bg3)"};color:${i===(s.activeScene||0)?"#1a1408":"var(--text)"};border:1px solid ${i===(s.activeScene||0)?"var(--amber)":"var(--line)"};border-radius:7px;padding:3px 10px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Barlow'">${esc(sc.name||"Scene "+(i+1))}</button>`).join("")}
+          ${(s.scenes||[]).length<8?`<button id="addSceneBtn" style="background:none;border:1px dashed var(--line);border-radius:7px;color:var(--muted);padding:3px 9px;font-size:12px;cursor:pointer;font-family:'Barlow'">+ Scene</button>`:""}
+        </div>
+        <button id="renameSceneBtn" title="Rename scene" style="background:none;border:1px solid var(--line);border-radius:7px;color:var(--muted);cursor:pointer;padding:3px 8px;font-size:12px">✎</button>
+        ${(s.scenes||[]).length>1?`<button id="delSceneBtn" title="Delete scene" style="background:none;border:1px solid var(--line);border-radius:7px;color:var(--muted);cursor:pointer;padding:3px 8px;font-size:12px">🗑</button>`:""}
+        <button id="splitFieldsToggle" title="${showSplitFields?"Hide":"Show"} split entries" style="background:none;border:1px solid var(--line);border-radius:8px;color:var(--muted);cursor:pointer;padding:3px 8px;font-size:11px;font-family:'Barlow';font-weight:600">${showSplitFields?"▲":"▼"}</button>
       </div>
       <div id="splitsEditorWrap" style="${showSplitFields?"":"display:none"}">
-        <div id="splitsEditor">${renderSplitsEditor(s.splits||[])}</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          ${activeScene(s).splits.length<8?`<button id="addSplitBtn" style="background:var(--amber);border:none;color:#1a1408;border-radius:7px;padding:4px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Barlow'">+ Add split</button>`:""}
+        </div>
+        <div id="splitsEditor">${renderSplitsEditor(activeScene(s).splits)}</div>
       </div>
-      <div id="splitsPreview" style="${(s.splits||[]).some(sp=>sp.from&&sp.to)?'':'display:none'}">${renderKeyboardSVG(s.splits||[])}</div>
+      <div id="splitsPreview">${renderAllScenesPreview(s)}</div>
     </div>
 
     <!-- MID: chords + preview (fills remaining space) -->
@@ -1786,23 +1811,18 @@ function onMidiMessage(e){
   const isNoteOn=(status&0xf0)===0x90&&e.data[2]>0;
   if(!isNoteOn) return;
   const noteName=midiToNote(note);
+  const sc=activeScene(_midiLearnSong);
   if(_midiLearnFirst===null){
-    // first key — store it, update from field visually
     _midiLearnFirst=note;
-    const s=_midiLearnSong; const i=_midiLearnIdx;
-    s.splits[i].from=noteName;
-    // update input field
-    const row=document.querySelector(`.split-row[data-split-i="${i}"]`);
+    sc.splits[_midiLearnIdx].from=noteName;
+    const row=document.querySelector(`.split-row[data-split-i="${_midiLearnIdx}"]`);
     if(row){ const inp=row.querySelector('[data-field="from"]'); if(inp) inp.value=noteName; }
-    // update learn button to show waiting for second key
     if(_midiLearnBtn){ _midiLearnBtn.textContent="🎹 2nd key…"; _midiLearnBtn.style.background="var(--amber)"; _midiLearnBtn.style.color="#1a1408"; }
   } else {
-    // second key — determine lo/hi, save, stop learning
     const lo=Math.min(_midiLearnFirst,note), hi=Math.max(_midiLearnFirst,note);
-    const s=_midiLearnSong; const i=_midiLearnIdx;
-    s.splits[i].from=midiToNote(lo);
-    s.splits[i].to=midiToNote(hi);
-    persist(); stopMidiLearn(s);
+    sc.splits[_midiLearnIdx].from=midiToNote(lo);
+    sc.splits[_midiLearnIdx].to=midiToNote(hi);
+    persist(); stopMidiLearn(_midiLearnSong);
   }
 }
 function stopMidiLearn(s){
@@ -1820,12 +1840,53 @@ async function startMidiLearn(idx,btn,s){
   btn.style.background="var(--teal)"; btn.style.color="#fff";
 }
 
+function renderAllScenesPreview(s){
+  const scenes=s.scenes||[];
+  const hasAny=scenes.some(sc=>sc.splits.some(sp=>sp.from&&sp.to&&validNote(sp.from)&&validNote(sp.to)));
+  if(!hasAny) return "";
+  return scenes.map((sc,i)=>{
+    const hasSplits=sc.splits.some(sp=>sp.from&&sp.to&&validNote(sp.from)&&validNote(sp.to));
+    if(!hasSplits) return "";
+    const isActive=i===(s.activeScene||0);
+    return `<div style="margin-top:6px;opacity:${isActive?1:0.55}">
+      ${scenes.length>1?`<div style="font-size:10px;font-weight:700;color:var(--amber);font-family:'Barlow';letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px">${esc(sc.name||"Scene "+(i+1))}</div>`:""}
+      ${renderKeyboardSVG(sc.splits)}
+    </div>`;
+  }).join("");
+}
 function wireSplitsEditor(s){
+  // scene tabs
+  document.querySelectorAll(".scene-tab").forEach(btn=>{
+    btn.onclick=()=>{s.activeScene=+btn.dataset.sceneI;persist();renderSplitsSection(s);};
+  });
+  const addSceneBtn=$("addSceneBtn");
+  if(addSceneBtn) addSceneBtn.onclick=()=>{
+    if(s.scenes.length>=8) return;
+    const n=s.scenes.length+1;
+    s.scenes.push({id:uid(),name:"Scene "+n,splits:[]});
+    s.activeScene=s.scenes.length-1;
+    persist(); renderSplitsSection(s);
+  };
+  const renameBtn=$("renameSceneBtn");
+  if(renameBtn) renameBtn.onclick=()=>{
+    const sc=activeScene(s);
+    const n=prompt("Scene name:",sc.name||"");
+    if(n&&n.trim()){sc.name=n.trim();persist();renderSplitsSection(s);}
+  };
+  const delSceneBtn=$("delSceneBtn");
+  if(delSceneBtn) delSceneBtn.onclick=()=>{
+    if(s.scenes.length<=1) return;
+    if(!confirm("Delete scene \""+(activeScene(s).name||"Scene")+"\"?")) return;
+    s.scenes.splice(s.activeScene||0,1);
+    s.activeScene=Math.max(0,(s.activeScene||0)-1);
+    persist(); renderSplitsSection(s);
+  };
+  // add split
   const addBtn=$("addSplitBtn");
   if(addBtn) addBtn.onclick=()=>{
-    if(!s.splits) s.splits=[];
-    if(s.splits.length>=8) return;
-    s.splits.push({id:uid(),from:"",to:"",instrument:"",color:splitColor(s.splits.length)});
+    const sc=activeScene(s); if(!sc) return;
+    if(sc.splits.length>=8) return;
+    sc.splits.push({id:uid(),from:"",to:"",instrument:"",color:splitColor(sc.splits.length)});
     persist(); renderSplitsSection(s);
   };
   const tog=$("splitFieldsToggle");
@@ -1838,21 +1899,22 @@ function wireSplitsEditor(s){
   wireSplitRows(s);
 }
 function wireSplitRows(s){
+  const sc=activeScene(s); if(!sc) return;
   const ed=$("splitsEditor"); if(!ed) return;
   ed.querySelectorAll(".split-row").forEach((row,i)=>{
-    row.querySelector(".split-color").oninput=e=>{s.splits[i].color=e.target.value;persist();refreshSplitsPreview(s);};
+    row.querySelector(".split-color").oninput=e=>{sc.splits[i].color=e.target.value;persist();refreshSplitsPreview(s);};
     row.querySelectorAll(".split-note").forEach(inp=>{
       inp.oninput=e=>{
         const v=e.target.value.trim();
-        s.splits[i][inp.dataset.field]=v;
+        sc.splits[i][inp.dataset.field]=v;
         inp.style.borderColor=v&&!validNote(v)?"var(--red)":"var(--line)";
         persist(); refreshSplitsPreview(s);
       };
     });
-    row.querySelector(".split-name").oninput=e=>{s.splits[i].instrument=e.target.value;persist();refreshSplitsPreview(s);};
+    row.querySelector(".split-name").oninput=e=>{sc.splits[i].instrument=e.target.value;persist();refreshSplitsPreview(s);};
     row.querySelector(".split-opacity").oninput=e=>{
       const v=parseFloat(e.target.value);
-      s.splits[i].opacity=v;
+      sc.splits[i].opacity=v;
       const lbl=row.querySelector(".split-opacity-lbl");
       if(lbl) lbl.textContent=Math.round(v*100)+"%";
       persist(); refreshSplitsPreview(s);
@@ -1860,23 +1922,27 @@ function wireSplitRows(s){
     row.querySelector(".split-learn").onclick=e=>startMidiLearn(i,e.currentTarget,s);
     row.querySelector(".split-del").onclick=()=>{
       if(_midiListening&&_midiLearnIdx===i) stopMidiLearn(null);
-      s.splits.splice(i,1);persist();renderSplitsSection(s);
+      sc.splits.splice(i,1);persist();renderSplitsSection(s);
     };
   });
 }
 function refreshSplitsPreview(s){
   const prev=$("splitsPreview"); if(!prev) return;
-  const valid=(s.splits||[]).some(sp=>sp.from&&sp.to&&validNote(sp.from)&&validNote(sp.to));
-  prev.style.display=valid?"":"none";
-  prev.innerHTML=renderKeyboardSVG(s.splits||[]);
+  prev.innerHTML=renderAllScenesPreview(s);
 }
 function renderSplitsSection(s){
   const wrap=$("splitsEditorWrap"); if(wrap) wrap.style.display=showSplitFields?"":"none";
-  const ed=$("splitsEditor"); if(ed) ed.innerHTML=renderSplitsEditor(s.splits||[]);
-  refreshSplitsPreview(s);
-  wireSplitRows(s);
-  const addBtn=$("addSplitBtn"); if(addBtn) addBtn.style.display=(s.splits||[]).length>=8?"none":"";
+  // rebuild scene tabs
+  const tabsEl=$("sceneTabs");
+  if(tabsEl){
+    tabsEl.innerHTML=(s.scenes||[]).map((sc,i)=>`<button class="scene-tab ${i===(s.activeScene||0)?"active":""}" data-scene-i="${i}" style="background:${i===(s.activeScene||0)?"var(--amber)":"var(--bg3)"};color:${i===(s.activeScene||0)?"#1a1408":"var(--text)"};border:1px solid ${i===(s.activeScene||0)?"var(--amber)":"var(--line)"};border-radius:7px;padding:3px 10px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Barlow'">${esc(sc.name||"Scene "+(i+1))}</button>`).join("")
+      +(s.scenes.length<8?`<button id="addSceneBtn" style="background:none;border:1px dashed var(--line);border-radius:7px;color:var(--muted);padding:3px 9px;font-size:12px;cursor:pointer;font-family:'Barlow'">+ Scene</button>`:"");
+  }
+  const ed=$("splitsEditor"); if(ed) ed.innerHTML=renderSplitsEditor(activeScene(s).splits);
+  const addBtn=$("addSplitBtn"); if(addBtn) addBtn.style.display=activeScene(s).splits.length>=8?"none":"";
   const tog=$("splitFieldsToggle"); if(tog) tog.textContent=showSplitFields?"▲":"▼";
+  refreshSplitsPreview(s);
+  wireSplitsEditor(s);
 }
 function wrapInline(before,after){
   const sel=v.slice(s,e)||"text"; const ins=before+sel+after;
@@ -2012,7 +2078,7 @@ function openSong(id,ctx){
   if(window.innerWidth<=780) $("side").classList.add("hidden");
 }
 function step(dir){if(context.type!=="setlist")return;const sl=setById(context.setId);if(!sl)return;const i=sl.songIds.indexOf(currentId);const j=i+dir;if(j<0||j>=sl.songIds.length)return;openSong(sl.songIds[j],context);const sc=$("scroll");if(sc)sc.scrollTop=0;}
-function addSong(){const s={id:uid(),title:"",artist:"",key:"",capo:"",tempo:"",chords:"",transpose:0,splits:[],created:Date.now(),updated:Date.now()};songs.push(s);currentId=s.id;context={type:"library",setId:null};transpose=0;view="edit";persist();tab="songs";renderSidebar();renderMain();setTimeout(()=>{const t=$("fTitle");if(t)t.focus();},30);if(window.innerWidth<=780)$("side").classList.add("hidden");}
+function addSong(){const s={id:uid(),title:"",artist:"",key:"",capo:"",tempo:"",chords:"",transpose:0,scenes:[{id:uid(),name:"Scene 1",splits:[]}],activeScene:0,created:Date.now(),updated:Date.now()};songs.push(s);currentId=s.id;context={type:"library",setId:null};transpose=0;view="edit";persist();tab="songs";renderSidebar();renderMain();setTimeout(()=>{const t=$("fTitle");if(t)t.focus();},30);if(window.innerWidth<=780)$("side").classList.add("hidden");}
 
 const PRINT_LIGHT={"--bg":"#fff","--bg2":"#fff","--bg3":"#f4eddd","--bg4":"#ece2cb","--line":"#ddd3bd","--text":"#241f16","--muted":"#8a7e62","--amber":"#a8631c","--amber-dim":"#8a5417","--teal":"#1d6c7d","--red":"#bd442a"};
 const PRINT_DARK={"--bg":"#15130f","--bg2":"#1c1914","--bg3":"#252019","--bg4":"#2e2820","--line":"#352e23","--text":"#ece4d3","--muted":"#90876f","--amber":"#f3b34c","--amber-dim":"#c9923a","--teal":"#74b9c6","--red":"#db6240"};
@@ -2146,7 +2212,7 @@ document.addEventListener("keydown",e=>{const tag=(e.target.tagName||"").toLower
     case "]":sheetSize=Math.min(42,sheetSize+1);renderMain();break; case "[":sheetSize=Math.max(11,sheetSize-1);renderMain();break;
   }});
 
-(async function init(){const d=await DB.load();if(d){songs=d.songs||[];setlists=d.setlists||[];folders=d.folders||[];theme=d.theme||"dark";printTheme=d.printTheme||"light";printMargin=d.printMargin||"normal";printPadding=d.printPadding||"normal";pdfOrder=d.pdfOrder||"artist-title";marginTop=d.marginTop??18;marginBottom=d.marginBottom??18;marginLeft=d.marginLeft??18;marginRight=d.marginRight??18;showMetaFields=d.showMetaFields!==false;showSplitFields=d.showSplitFields!==false;pageSize=d.pageSize||"A4";pageSizeCustomW=d.pageSizeCustomW||210;pageSizeCustomH=d.pageSizeCustomH||297;previewSplit=d.previewSplit||50;previewZoom=d.previewZoom||0;showPreview=d.showPreview!==false;defaultView=d.defaultView||"perform";}
+(async function init(){const d=await DB.load();if(d){songs=(d.songs||[]).map(migrateSong);setlists=d.setlists||[];folders=d.folders||[];theme=d.theme||"dark";printTheme=d.printTheme||"light";printMargin=d.printMargin||"normal";printPadding=d.printPadding||"normal";pdfOrder=d.pdfOrder||"artist-title";marginTop=d.marginTop??18;marginBottom=d.marginBottom??18;marginLeft=d.marginLeft??18;marginRight=d.marginRight??18;showMetaFields=d.showMetaFields!==false;showSplitFields=d.showSplitFields!==false;pageSize=d.pageSize||"A4";pageSizeCustomW=d.pageSizeCustomW||210;pageSizeCustomH=d.pageSizeCustomH||297;previewSplit=d.previewSplit||50;previewZoom=d.previewZoom||0;showPreview=d.showPreview!==false;defaultView=d.defaultView||"perform";}
   if(!songs.length){songs=[{id:uid(),title:"Demo — delete me",artist:"How it renders",key:"C",capo:"0",tempo:"100",transpose:0,
     chords:"# Part One\n[Intro]\nC        G        Am       F\n\n[Verse]\nC                 G\nThis is a placeholder lyric line\nAm                F\nchords sit right above the words\n\n## A louder section\n[Chorus]\nF     G      C        Am\n{red:watch the modulation here}\nF     G      C\npaste real chords over this",updated:Date.now()}];}
   currentId=songs[0].id;
