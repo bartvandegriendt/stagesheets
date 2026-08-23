@@ -84,6 +84,10 @@
   .nowbar .next b{color:var(--text)}
   .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--bg2);flex:0 0 auto}
   .seg{display:flex;background:var(--bg);border:1px solid var(--line);border-radius:9px;overflow:hidden}
+  .splits-section{flex:0 0 auto;padding:0 20px;display:flex;flex-direction:column;gap:6px}
+  .split-row{display:flex;align-items:center;gap:8px;padding:4px 0}
+  .splits-block{margin:10px 0 16px;padding:10px 14px;background:var(--bg2);border-radius:10px;border:1px solid var(--line)}
+  @media(max-width:780px){.splits-section{padding:0 12px}.split-row{flex-wrap:wrap}}
   .seg button{background:none;border:none;color:var(--muted);padding:7px 14px;cursor:pointer;font-family:"Barlow";font-weight:600;font-size:13px}
   .seg button.on{background:var(--bg3);color:var(--amber)}
   .nav{display:flex;gap:6px}
@@ -316,7 +320,7 @@
 <div class="top">
   <div>
     <div class="brand"><span class="dot"></span>STAGE SHEETS</div>
-    <div class="sub">songs &amp; setlists <span style="font-family:'JetBrains Mono';font-size:9px;opacity:.45;letter-spacing:.04em">v3.3.5</span></div>
+    <div class="sub">songs &amp; setlists <span style="font-family:'JetBrains Mono';font-size:9px;opacity:.45;letter-spacing:.04em">v3.4.0</span></div>
   </div>
   <div class="spacer"></div>
   <input type="file" id="importFile" accept=".json" style="display:none">
@@ -478,6 +482,92 @@ const DB={
 /* ═══════════════════════════════════════════════════════════════
    MUSIC THEORY — chord detection, transpose, colour, body render
    ═══════════════════════════════════════════════════════════════ */
+/* ── keyboard split engine ── */
+const NOTE_NAMES=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+const NOTE_ALT={Db:"C#",Eb:"D#",Fb:"E",Gb:"F#",Ab:"G#",Bb:"A#",Cb:"B"};
+function noteToMidi(n){ // "C4" -> 60
+  const m=n.trim().match(/^([A-G][#b]?)(-?\d)$/);
+  if(!m)return null;
+  const name=NOTE_ALT[m[1]]||m[1], oct=parseInt(m[2]);
+  const idx=NOTE_NAMES.indexOf(name); if(idx<0)return null;
+  return (oct+1)*12+idx;
+}
+function midiToNote(midi){return NOTE_NAMES[midi%12]+(Math.floor(midi/12)-1);}
+function validNote(n){return noteToMidi(n)!==null;}
+const SPLIT_COLORS=["#5b9bd5","#5fb56b","#f3b34c","#e2574c","#b07fe0","#74b9c6","#e8913a","#e072a8"];
+function splitColor(i){return SPLIT_COLORS[i%SPLIT_COLORS.length];}
+
+/* ── keyboard SVG renderer ── */
+function renderKeyboardSVG(splits,width=560){
+  if(!splits||!splits.length) return "";
+  const MIDI_MIN=36, MIDI_MAX=108; // C2–C8
+  const totalKeys=MIDI_MAX-MIDI_MIN+1;
+  // white key layout
+  const WHITE=[0,2,4,5,7,9,11]; // semitones that are white keys
+  function isWhite(midi){return WHITE.includes(midi%12);}
+  const whiteKeys=[]; for(let m=MIDI_MIN;m<=MIDI_MAX;m++){if(isWhite(m))whiteKeys.push(m);}
+  const wCount=whiteKeys.length;
+  const wW=width/wCount, wH=56, bW=wW*0.6, bH=34;
+  const svgH=wH+28; // extra space above for labels
+  const labelY=22;
+  // compute x position of a midi note
+  function midiX(midi){
+    const BLACK_OFF=[0,0.55,0,0.6,0,0,0.55,0,0.58,0,0.62,0];
+    if(isWhite(midi)){
+      const wi=whiteKeys.indexOf(midi);
+      return wi*wW;
+    } else {
+      const below=midi-1; const wi=whiteKeys.indexOf(below);
+      return wi*wW+wW-bW*0.5-bW*BLACK_OFF[midi%12];
+    }
+  }
+  function midiCenterX(midi){
+    return isWhite(midi)?midiX(midi)+wW/2:midiX(midi)+bW/2;
+  }
+  // build white keys
+  let whites="", blacks="", labels="", zones="";
+  whiteKeys.forEach((m,i)=>{
+    whites+=`<rect x="${(i*wW).toFixed(1)}" y="${labelY}" width="${(wW-0.8).toFixed(1)}" height="${wH}" rx="2" fill="#f0ede6" stroke="#aaa" stroke-width=".7"/>`;
+  });
+  // draw split zones on white keys area
+  const validSplits=splits.filter(sp=>sp.from&&sp.to&&validNote(sp.from)&&validNote(sp.to));
+  validSplits.forEach((sp,i)=>{
+    const fromM=noteToMidi(sp.from), toM=noteToMidi(sp.to);
+    if(fromM===null||toM===null) return;
+    const lo=Math.max(MIDI_MIN,Math.min(fromM,toM));
+    const hi=Math.min(MIDI_MAX,Math.max(fromM,toM));
+    // find first/last white key in range for zone width
+    let x1=null,x2=null;
+    for(let m2=lo;m2<=hi;m2++){
+      if(isWhite(m2)){const x=midiX(m2);if(x1===null)x1=x;x2=x+wW;}
+    }
+    if(x1===null){x1=midiCenterX(lo)-bW/2;x2=midiCenterX(hi)+bW/2;}
+    const col=sp.color||splitColor(i);
+    zones+=`<rect x="${x1.toFixed(1)}" y="${labelY}" width="${(x2-x1).toFixed(1)}" height="${wH}" fill="${col}" opacity=".35" rx="1"/>`;
+    // label above
+    const cx=((x1+x2)/2).toFixed(1);
+    const lw=Math.max(60,x2-x1-4);
+    labels+=`<text x="${cx}" y="${(labelY-5).toFixed(1)}" text-anchor="middle" font-size="10" font-family="Barlow,sans-serif" font-weight="600" fill="${col}" clip-path="url(#lc${i})">${esc(sp.instrument||"—")}</text>`;
+    labels+=`<clipPath id="lc${i}"><rect x="${x1.toFixed(1)}" y="0" width="${(x2-x1).toFixed(1)}" height="${labelY}"/></clipPath>`;
+    // range label below keyboard
+    const rangeLabel=`${sp.from}–${sp.to}`;
+    labels+=`<text x="${cx}" y="${(labelY+wH+11).toFixed(1)}" text-anchor="middle" font-size="8.5" font-family="JetBrains Mono,monospace" fill="${col}" opacity=".8">${rangeLabel}</text>`;
+  });
+  // black keys on top
+  for(let m=MIDI_MIN;m<=MIDI_MAX;m++){
+    if(!isWhite(m)){
+      const x=midiX(m);
+      blacks+=`<rect x="${x.toFixed(1)}" y="${labelY}" width="${bW.toFixed(1)}" height="${bH}" rx="1.5" fill="#1a1408" stroke="#000" stroke-width=".5"/>`;
+    }
+  }
+  return `<svg viewBox="0 0 ${width} ${svgH}" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:${width}px;height:auto;display:block">`
+    +zones+whites+blacks+labels+`</svg>`;
+}
+function renderSplitsHTML(splits){
+  if(!splits||!splits.length) return "";
+  const svg=renderKeyboardSVG(splits);
+  return `<div class="splits-block">${svg}</div>`;
+}
 const SHARP=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
 const FLAT =["C","Db","D","Eb","E","F","Gb","G","Ab","A","Bb","B"];
 const IDX={C:0,"C#":1,Db:1,D:2,"D#":3,Eb:3,E:4,Fb:4,"E#":5,F:5,"F#":6,Gb:6,G:7,"G#":8,Ab:8,A:9,"A#":10,Bb:10,B:11,Cb:11,"B#":0};
@@ -1169,9 +1259,10 @@ function renderPerform(s){
   const pageHpx=Math.round(dims.h*PX);
   const pageBg=printTheme==="dark"?"var(--bg2)":"#f8f6f0";
   const pageStyle=`--page-w-px:${pageWpx}px;--page-h-px:${pageHpx}px;--page-pad-t:${innerPadT}px;--page-pad-b:${innerPadB}px;--page-pad-l:${innerPadL}px;--page-pad-r:${innerPadR}px;--page-bg:${pageBg}`;
+  const splitsHtml=(s.splits&&s.splits.some(sp=>sp.from&&sp.to&&validNote(sp.from)&&validNote(sp.to)))?renderSplitsHTML(s.splits):"";
   $("main").innerHTML=nowbar()+toolbar(s)+`<div class="scroll" id="scroll" style="${pageStyle}"><div class="page-wrap"><div class="sheet">
       <h1 class="songtitle">${esc(s.title||"Untitled")}</h1>${s.artist?`<div class="artist">${esc(s.artist)}</div>`:""}
-      ${metaInfo(s,transpose)}<div class="rule"></div>${body}</div></div></div>`;
+      ${metaInfo(s,transpose)}<div class="rule"></div>${splitsHtml}${body}</div></div></div>`;
   wireToolbar(s);
 }
 function renderEditor(s){
@@ -1189,6 +1280,16 @@ function renderEditor(s){
         <div class="field"><label>Tempo</label><input id="fTempo" value="${esc(s.tempo||"")}" placeholder="93"></div>
         <div class="field"><label>&nbsp;</label><a class="ugbtn" id="ugEdit" href="${ugUrl(s.title,s.artist)}" target="_blank" rel="noopener">🔎 Find chords</a></div>
       </div>
+    </div>
+
+    <!-- SPLITS: keyboard range editor -->
+    <div class="splits-section">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+        <label style="color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.1em;flex:1">Keyboard splits</label>
+        ${(s.splits||[]).length<8?`<button id="addSplitBtn" style="background:var(--amber);border:none;color:#1a1408;border-radius:7px;padding:4px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Barlow'">+ Add split</button>`:""}
+      </div>
+      <div id="splitsEditor">${renderSplitsEditor(s.splits||[])}</div>
+      <div id="splitsPreview" style="${(s.splits||[]).some(sp=>sp.from&&sp.to)?'':'display:none'}">${renderKeyboardSVG(s.splits||[])}</div>
     </div>
 
     <!-- MID: chords + preview (fills remaining space) -->
@@ -1540,6 +1641,7 @@ function renderEditor(s){
   $("fmtReflow").onclick=reflowChords;
   $("fmtHelp").onclick=showHelp;
   $("saveBtn").onclick=()=>{s.title=$("fTitle").value.trim();s.artist=$("fArtist").value.trim();s.key=$("fKey").value.trim();s.capo=$("fCapo").value.trim();s.tempo=$("fTempo").value.trim();s.chords=$("fChords").value;s.updated=Date.now();persist();renderSidebar();renderMain();};
+  wireSplitsEditor(s);
   $("delBtn").onclick=()=>{if(!confirm("Delete “"+(s.title||"Untitled")+"”?"))return;songs=songs.filter(x=>x.id!==s.id);setlists.forEach(sl=>sl.songIds=sl.songIds.filter(id=>id!==s.id));currentId=songs[0]?songs[0].id:null;context={type:"library",setId:null};persist();renderSidebar();renderMain();};
 }
 function applyHeading(lvl){
@@ -1553,8 +1655,60 @@ function wrapColor(col){
   const sel=v.slice(s,e)||"text"; const ins="{"+col+":"+sel+"}";
   ta.value=v.slice(0,s)+ins+v.slice(e); const inner=s+col.length+2; ta.focus(); ta.setSelectionRange(inner,inner+sel.length);
 }
+function renderSplitsEditor(splits){
+  if(!splits.length) return `<div style="color:var(--muted);font-size:12.5px;padding:4px 0">No splits defined. Add one to map instruments to keyboard zones.</div>`;
+  return splits.map((sp,i)=>`
+    <div class="split-row" data-split-i="${i}">
+      <input type="color" class="split-color" value="${sp.color||splitColor(i)}" title="Colour" style="width:30px;height:30px;border:none;border-radius:7px;cursor:pointer;padding:2px;background:none">
+      <input class="split-note" placeholder="C2" value="${esc(sp.from||"")}" data-field="from" style="${noteInputStyle()}">
+      <span style="color:var(--muted);font-size:13px;padding:0 2px">→</span>
+      <input class="split-note" placeholder="B3" value="${esc(sp.to||"")}" data-field="to" style="${noteInputStyle()}">
+      <input class="split-name" placeholder="Instrument / patch name" value="${esc(sp.instrument||"")}" style="flex:1;background:var(--bg2);border:1px solid var(--line);border-radius:9px;color:var(--text);padding:8px 11px;font-family:'Barlow';font-size:14px;outline:none">
+      <button class="split-del" data-split-i="${i}" title="Remove" style="background:none;border:1px solid var(--line);border-radius:7px;color:var(--muted);cursor:pointer;padding:6px 10px;font-size:14px">🗑</button>
+    </div>`).join("");
+}
+function noteInputStyle(){return "width:52px;background:var(--bg2);border:1px solid var(--line);border-radius:9px;color:var(--text);padding:8px 8px;font-family:'JetBrains Mono';font-size:13px;outline:none;text-align:center";}
+function wireSplitsEditor(s){
+  const addBtn=$("addSplitBtn");
+  if(addBtn) addBtn.onclick=()=>{
+    if(!s.splits) s.splits=[];
+    if(s.splits.length>=8) return;
+    s.splits.push({id:uid(),from:"",to:"",instrument:"",color:splitColor(s.splits.length)});
+    persist(); renderSplitsSection(s);
+  };
+  wireSplitRows(s);
+}
+function wireSplitRows(s){
+  const ed=$("splitsEditor"); if(!ed) return;
+  ed.querySelectorAll(".split-row").forEach((row,i)=>{
+    row.querySelector(".split-color").oninput=e=>{s.splits[i].color=e.target.value;persist();refreshSplitsPreview(s);};
+    row.querySelectorAll(".split-note").forEach(inp=>{
+      inp.oninput=e=>{
+        const v=e.target.value.trim();
+        s.splits[i][inp.dataset.field]=v;
+        inp.style.borderColor=v&&!validNote(v)?"var(--red)":"var(--line)";
+        persist(); refreshSplitsPreview(s);
+      };
+    });
+    row.querySelector(".split-name").oninput=e=>{s.splits[i].instrument=e.target.value;persist();refreshSplitsPreview(s);};
+    row.querySelector(".split-del").onclick=()=>{s.splits.splice(i,1);persist();renderSplitsSection(s);};
+  });
+}
+function refreshSplitsPreview(s){
+  const prev=$("splitsPreview"); if(!prev) return;
+  const valid=(s.splits||[]).some(sp=>sp.from&&sp.to&&validNote(sp.from)&&validNote(sp.to));
+  prev.style.display=valid?"":"none";
+  prev.innerHTML=renderKeyboardSVG(s.splits||[]);
+}
+function renderSplitsSection(s){
+  const ed=$("splitsEditor"); if(ed) ed.innerHTML=renderSplitsEditor(s.splits||[]);
+  refreshSplitsPreview(s);
+  wireSplitRows(s);
+  // update add button
+  const addBtn=$("addSplitBtn");
+  if(addBtn) addBtn.style.display=(s.splits||[]).length>=8?"none":"";
+}
 function wrapInline(before,after){
-  const ta=$("fChords"); if(!ta)return; const v=ta.value,s=ta.selectionStart,e=ta.selectionEnd;
   const sel=v.slice(s,e)||"text"; const ins=before+sel+after;
   ta.value=v.slice(0,s)+ins+v.slice(e);
   ta.focus(); ta.setSelectionRange(s+before.length, s+before.length+sel.length);
@@ -1688,7 +1842,7 @@ function openSong(id,ctx){
   if(window.innerWidth<=780) $("side").classList.add("hidden");
 }
 function step(dir){if(context.type!=="setlist")return;const sl=setById(context.setId);if(!sl)return;const i=sl.songIds.indexOf(currentId);const j=i+dir;if(j<0||j>=sl.songIds.length)return;openSong(sl.songIds[j],context);const sc=$("scroll");if(sc)sc.scrollTop=0;}
-function addSong(){const s={id:uid(),title:"",artist:"",key:"",capo:"",tempo:"",chords:"",transpose:0,created:Date.now(),updated:Date.now()};songs.push(s);currentId=s.id;context={type:"library",setId:null};transpose=0;view="edit";persist();tab="songs";renderSidebar();renderMain();setTimeout(()=>{const t=$("fTitle");if(t)t.focus();},30);if(window.innerWidth<=780)$("side").classList.add("hidden");}
+function addSong(){const s={id:uid(),title:"",artist:"",key:"",capo:"",tempo:"",chords:"",transpose:0,splits:[],created:Date.now(),updated:Date.now()};songs.push(s);currentId=s.id;context={type:"library",setId:null};transpose=0;view="edit";persist();tab="songs";renderSidebar();renderMain();setTimeout(()=>{const t=$("fTitle");if(t)t.focus();},30);if(window.innerWidth<=780)$("side").classList.add("hidden");}
 
 const PRINT_LIGHT={"--bg":"#fff","--bg2":"#fff","--bg3":"#f4eddd","--bg4":"#ece2cb","--line":"#ddd3bd","--text":"#241f16","--muted":"#8a7e62","--amber":"#a8631c","--amber-dim":"#8a5417","--teal":"#1d6c7d","--red":"#bd442a"};
 const PRINT_DARK={"--bg":"#15130f","--bg2":"#1c1914","--bg3":"#252019","--bg4":"#2e2820","--line":"#352e23","--text":"#ece4d3","--muted":"#90876f","--amber":"#f3b34c","--amber-dim":"#c9923a","--teal":"#74b9c6","--red":"#db6240"};
