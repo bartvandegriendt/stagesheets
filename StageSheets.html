@@ -301,7 +301,7 @@
   }
   .printset{display:none}
   @media print{
-    @page{ margin: var(--pm-top,18mm) var(--pm-right,18mm) var(--pm-bottom,18mm) var(--pm-left,18mm); size: var(--print-page-w, 210mm) var(--print-page-h, 297mm); }
+    @page{ margin: 0; size: var(--print-page-w, 210mm) var(--print-page-h, 297mm); }
     html[data-print-theme="light"]{
       --bg:#fff; --bg2:#fff; --bg3:#f4eddd; --bg4:#ece2cb; --line:#ddd3bd;
       --text:#241f16; --muted:#8a7e62; --amber:#a8631c; --amber-dim:#8a5417;
@@ -313,14 +313,13 @@
       --teal:#74b9c6; --red:#db6240;
     }
     *{ -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
-    body{ background:var(--bg) !important; color:var(--text) !important; }
+    html,body{background:var(--page-bg,#1c1914)!important;color:var(--text)!important;overflow:visible!important;display:block!important}
+    body::after{display:none}
     .top,.side,.toolbar,.nowbar,#projectBar,.editor{display:none!important}
-    body{background:#fff;color:#000;overflow:visible;display:block} body::after{display:none}
-    .wrap,.main,.scroll{display:block;overflow:visible;height:auto}
-    .scroll{padding:0!important;background:var(--page-bg)!important}
-    .page-wrap{width:100%!important;max-width:none!important;box-shadow:none!important;border-radius:0!important;animation:none!important;min-height:0!important}
-    .sheet{padding:0!important;background:transparent!important}
-    .sheet{animation:none}
+    .wrap,.main,.scroll{display:block!important;overflow:visible!important;height:auto!important}
+    .scroll{padding:0!important;background:var(--page-bg,#1c1914)!important;margin:0!important}
+    .page-wrap{width:100%!important;max-width:none!important;box-shadow:none!important;border-radius:0!important;animation:none!important;min-height:0!important;background:var(--page-bg,#1c1914)!important}
+    .sheet{padding:var(--page-pad-t,18mm) var(--page-pad-r,18mm) var(--page-pad-b,18mm) var(--page-pad-l,18mm)!important;background:transparent!important;animation:none!important}
     .rule{background:var(--amber-dim)}
     body.printing-set .scroll{display:none!important}
     body.printing-set .printset{display:block!important}
@@ -332,7 +331,7 @@
 <div class="top">
   <div>
     <div class="brand"><span class="dot"></span>STAGE SHEETS</div>
-    <div class="sub">songs &amp; setlists <span style="font-family:'JetBrains Mono';font-size:9px;opacity:.45;letter-spacing:.04em">v3.5.2</span> <button id="changelogBtn" title="What's new" style="background:none;border:1px solid rgba(255,255,255,.15);border-radius:50%;width:14px;height:14px;color:var(--muted);cursor:pointer;font-size:8px;font-weight:700;line-height:1;padding:0;vertical-align:middle;margin-left:3px">i</button></div>
+    <div class="sub">songs &amp; setlists <span style="font-family:'JetBrains Mono';font-size:9px;opacity:.45;letter-spacing:.04em">v3.5.3</span> <button id="changelogBtn" title="What's new" style="background:none;border:1px solid rgba(255,255,255,.15);border-radius:50%;width:14px;height:14px;color:var(--muted);cursor:pointer;font-size:8px;font-weight:700;line-height:1;padding:0;vertical-align:middle;margin-left:3px">i</button></div>
   </div>
   <div class="spacer"></div>
   <input type="file" id="importFile" accept=".json" style="display:none">
@@ -623,26 +622,26 @@ function renderSplitsHTML(scenes){
   </div>`).join("");
 }
 const CHANGELOG=[
-  {v:"v3.5.2",msg:"Collapsible split entry rows — keyboard SVG always visible, rows toggle with ▲/▼. Also added collapsible Key/Capo/Tempo row."},
-  {v:"v3.5.2",msg:"Collapsible Key / Capo / Tempo / Find chords row in editor — toggle with ▼ button, persisted to data file"},
-  {v:"v3.5.2",msg:"Fix keyboard split label centering and range text clipping below keyboard"},
-  {v:"v3.5.2",msg:"Tab title shows 'Stage Sheets – Song – Artist' in edit view, updates live, restores correctly after printing. Changelog modal with info button."},
-  {v:"v3.5.2",msg:"Keyboard splits: individual key colouring per split, opacity slider with live preview"},
-  {v:"v3.5.2",msg:"MIDI Learn for keyboard splits — press Learn then play two keys to set the split range"},
-  {v:"v3.5.2",msg:"Keyboard splits: map instruments to key ranges, visual SVG keyboard strip in editor and perform view"},
-  {v:"v3.5.2",msg:"Page preview: mask top/bottom margins to prevent text bleed-through between pages"},
-  {v:"v3.5.2",msg:"Page preview: fix overlapping text with scroll-clip multi-page approach"},
-  {v:"v3.5.2",msg:"Page preview: keep title/artist/rule header together, fix page split element positioning"},
-  {v:"v3.5.2",msg:"Page preview: element-aware page splitting so no line is clipped mid-character"},
-  {v:"v3.5.2",msg:"Word-style multi-page preview with discrete page cards and grey desk background"},
-  {v:"v3.5.2",msg:"Individual top/right/bottom/left margin controls with preset buttons (None/Narrow/Normal/Wide)"},
-  {v:"v3.5.2",msg:"Fix submenu positioning (flips upward near screen edge), add New song in folder to right-click menu"},
-  {v:"v3.5.2",msg:"Fix mobile sidebar: remove overlay that was permanently dimming the song list on iOS"},
-  {v:"v3.5.2",msg:"Preserve sidebar scroll position when opening a song from the list"},
-  {v:"v3.5.2",msg:"Fix transpose in edit mode (no longer re-renders editor), fix screenshots in README"},
-  {v:"v3.5.2",msg:"Fix resizer drag using delta-based approach with full-screen overlay"},
-  {v:"v3.5.2",msg:"Resizer drag: use pointer capture for reliable cross-browser tracking"},
-  {v:"v3.5.2",msg:"Strip lyrics respects selection; Reflow chords (N per line); search clear button; default view toggle; save stays in current view"},
+  {v:"v3.5.3",msg:"Collapsible split entry rows — keyboard SVG always visible, rows toggle with ▲/▼. Also added collapsible Key/Capo/Tempo row."},
+  {v:"v3.5.3",msg:"Collapsible Key / Capo / Tempo / Find chords row in editor — toggle with ▼ button, persisted to data file"},
+  {v:"v3.5.3",msg:"Fix keyboard split label centering and range text clipping below keyboard"},
+  {v:"v3.5.3",msg:"Tab title shows 'Stage Sheets – Song – Artist' in edit view, updates live, restores correctly after printing. Changelog modal with info button."},
+  {v:"v3.5.3",msg:"Keyboard splits: individual key colouring per split, opacity slider with live preview"},
+  {v:"v3.5.3",msg:"MIDI Learn for keyboard splits — press Learn then play two keys to set the split range"},
+  {v:"v3.5.3",msg:"Keyboard splits: map instruments to key ranges, visual SVG keyboard strip in editor and perform view"},
+  {v:"v3.5.3",msg:"Page preview: mask top/bottom margins to prevent text bleed-through between pages"},
+  {v:"v3.5.3",msg:"Page preview: fix overlapping text with scroll-clip multi-page approach"},
+  {v:"v3.5.3",msg:"Page preview: keep title/artist/rule header together, fix page split element positioning"},
+  {v:"v3.5.3",msg:"Page preview: element-aware page splitting so no line is clipped mid-character"},
+  {v:"v3.5.3",msg:"Word-style multi-page preview with discrete page cards and grey desk background"},
+  {v:"v3.5.3",msg:"Individual top/right/bottom/left margin controls with preset buttons (None/Narrow/Normal/Wide)"},
+  {v:"v3.5.3",msg:"Fix submenu positioning (flips upward near screen edge), add New song in folder to right-click menu"},
+  {v:"v3.5.3",msg:"Fix mobile sidebar: remove overlay that was permanently dimming the song list on iOS"},
+  {v:"v3.5.3",msg:"Preserve sidebar scroll position when opening a song from the list"},
+  {v:"v3.5.3",msg:"Fix transpose in edit mode (no longer re-renders editor), fix screenshots in README"},
+  {v:"v3.5.3",msg:"Fix resizer drag using delta-based approach with full-screen overlay"},
+  {v:"v3.5.3",msg:"Resizer drag: use pointer capture for reliable cross-browser tracking"},
+  {v:"v3.5.3",msg:"Strip lyrics respects selection; Reflow chords (N per line); search clear button; default view toggle; save stays in current view"},
 ];
 function showChangelog(){
   if($("clModal")) return;
@@ -1738,8 +1737,18 @@ function renderEditor(s){
     const mt=$("pm_mt"),mb=$("pm_mb"),ml=$("pm_ml"),mr=$("pm_mr");
     if(mt)mt.value=marginTop; if(mb)mb.value=marginBottom;
     if(ml)ml.value=marginLeft; if(mr)mr.value=marginRight;
+    document.querySelectorAll(".margin-preset").forEach(x=>x.className="margin-preset");
+    b.className="margin-preset on";
     persist(); updatePreview();
   });
+  // highlight matching preset on load
+  function syncMarginPresets(){
+    document.querySelectorAll(".margin-preset").forEach(b=>{
+      const match=+b.dataset.mt===marginTop&&+b.dataset.mb===marginBottom&&+b.dataset.ml===marginLeft&&+b.dataset.mr===marginRight;
+      b.className="margin-preset"+(match?" on":"");
+    });
+  }
+  syncMarginPresets();
   // individual margin inputs
   [["pm_mt","mt"],["pm_mb","mb"],["pm_ml","ml"],["pm_mr","mr"]].forEach(([id,key])=>{
     const el=$(id); if(!el) return;
@@ -1749,6 +1758,7 @@ function renderEditor(s){
       else if(key==="mb") marginBottom=v;
       else if(key==="ml") marginLeft=v;
       else if(key==="mr") marginRight=v;
+      syncMarginPresets();
       persist(); updatePreview();
     };
   });
