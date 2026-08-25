@@ -112,10 +112,10 @@
   .ctl button:hover{color:var(--amber);border-color:var(--amber-dim)}
   .ctl .val{min-width:34px;text-align:center;font-family:"JetBrains Mono";font-size:13px;color:var(--amber)}
   .grow{flex:1}
-  .scroll{flex:1;overflow:auto;min-height:0;padding:24px 24px 80px;background:var(--bg3)}
-  .page-wrap{margin:0 auto;width:var(--page-w-px,794px);max-width:100%}
-  .sheet{background:var(--page-bg,var(--bg2));box-shadow:0 6px 32px rgba(0,0,0,.45);border-radius:2px;padding:var(--page-pad-t,24px) var(--page-pad-r,24px) var(--page-pad-b,24px) var(--page-pad-l,24px);animation:fadeUp .34s ease both;min-height:var(--page-h-px,200px)}
-  [data-theme="light"] .sheet{box-shadow:0 4px 20px rgba(0,0,0,.18)}
+  .scroll{flex:1;overflow:auto;min-height:0;padding:24px 24px 80px;background:var(--desk-bg,var(--bg3))}
+  .page-wrap{margin:0 auto;width:var(--page-w-px,794px);max-width:100%;background:var(--page-bg,var(--bg2));box-shadow:0 6px 32px rgba(0,0,0,.45);border-radius:2px;animation:fadeUp .34s ease both;min-height:var(--page-h-px,200px)}
+  .sheet{background:transparent;padding:var(--page-pad-t,24px) var(--page-pad-r,24px) var(--page-pad-b,24px) var(--page-pad-l,24px)}
+  [data-theme="light"] .page-wrap{box-shadow:0 4px 20px rgba(0,0,0,.18)}
   @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
   .sheet h1.songtitle{font-family:"Bebas Neue";font-weight:400;font-size:clamp(34px,5vw,52px);letter-spacing:1.5px;margin:0;line-height:1}
   .sheet .artist{color:var(--teal);font-size:18px;font-weight:600;margin-top:2px}
@@ -317,9 +317,9 @@
     .top,.side,.toolbar,.nowbar,#projectBar,.editor{display:none!important}
     body{background:#fff;color:#000;overflow:visible;display:block} body::after{display:none}
     .wrap,.main,.scroll{display:block;overflow:visible;height:auto}
-    .scroll{padding:0!important;background:none!important}
-    .page-wrap{width:100%!important;max-width:none!important}
-    .sheet{box-shadow:none!important;border-radius:0!important;padding:var(--print-padding,8mm) var(--print-padding,8mm) var(--print-padding,8mm) var(--print-padding,8mm)!important;min-height:0!important;background:var(--bg)!important}
+    .scroll{padding:0!important;background:var(--page-bg)!important}
+    .page-wrap{width:100%!important;max-width:none!important;box-shadow:none!important;border-radius:0!important;animation:none!important;min-height:0!important}
+    .sheet{padding:0!important;background:transparent!important}
     .sheet{animation:none}
     .rule{background:var(--amber-dim)}
     body.printing-set .scroll{display:none!important}
@@ -332,7 +332,7 @@
 <div class="top">
   <div>
     <div class="brand"><span class="dot"></span>STAGE SHEETS</div>
-    <div class="sub">songs &amp; setlists <span style="font-family:'JetBrains Mono';font-size:9px;opacity:.45;letter-spacing:.04em">v3.5.1</span> <button id="changelogBtn" title="What's new" style="background:none;border:1px solid rgba(255,255,255,.15);border-radius:50%;width:14px;height:14px;color:var(--muted);cursor:pointer;font-size:8px;font-weight:700;line-height:1;padding:0;vertical-align:middle;margin-left:3px">i</button></div>
+    <div class="sub">songs &amp; setlists <span style="font-family:'JetBrains Mono';font-size:9px;opacity:.45;letter-spacing:.04em">v3.5.2</span> <button id="changelogBtn" title="What's new" style="background:none;border:1px solid rgba(255,255,255,.15);border-radius:50%;width:14px;height:14px;color:var(--muted);cursor:pointer;font-size:8px;font-weight:700;line-height:1;padding:0;vertical-align:middle;margin-left:3px">i</button></div>
   </div>
   <div class="spacer"></div>
   <input type="file" id="importFile" accept=".json" style="display:none">
@@ -623,26 +623,26 @@ function renderSplitsHTML(scenes){
   </div>`).join("");
 }
 const CHANGELOG=[
-  {v:"v3.5.1",msg:"Collapsible split entry rows — keyboard SVG always visible, rows toggle with ▲/▼. Also added collapsible Key/Capo/Tempo row."},
-  {v:"v3.5.1",msg:"Collapsible Key / Capo / Tempo / Find chords row in editor — toggle with ▼ button, persisted to data file"},
-  {v:"v3.5.1",msg:"Fix keyboard split label centering and range text clipping below keyboard"},
-  {v:"v3.5.1",msg:"Tab title shows 'Stage Sheets – Song – Artist' in edit view, updates live, restores correctly after printing. Changelog modal with info button."},
-  {v:"v3.5.1",msg:"Keyboard splits: individual key colouring per split, opacity slider with live preview"},
-  {v:"v3.5.1",msg:"MIDI Learn for keyboard splits — press Learn then play two keys to set the split range"},
-  {v:"v3.5.1",msg:"Keyboard splits: map instruments to key ranges, visual SVG keyboard strip in editor and perform view"},
-  {v:"v3.5.1",msg:"Page preview: mask top/bottom margins to prevent text bleed-through between pages"},
-  {v:"v3.5.1",msg:"Page preview: fix overlapping text with scroll-clip multi-page approach"},
-  {v:"v3.5.1",msg:"Page preview: keep title/artist/rule header together, fix page split element positioning"},
-  {v:"v3.5.1",msg:"Page preview: element-aware page splitting so no line is clipped mid-character"},
-  {v:"v3.5.1",msg:"Word-style multi-page preview with discrete page cards and grey desk background"},
-  {v:"v3.5.1",msg:"Individual top/right/bottom/left margin controls with preset buttons (None/Narrow/Normal/Wide)"},
-  {v:"v3.5.1",msg:"Fix submenu positioning (flips upward near screen edge), add New song in folder to right-click menu"},
-  {v:"v3.5.1",msg:"Fix mobile sidebar: remove overlay that was permanently dimming the song list on iOS"},
-  {v:"v3.5.1",msg:"Preserve sidebar scroll position when opening a song from the list"},
-  {v:"v3.5.1",msg:"Fix transpose in edit mode (no longer re-renders editor), fix screenshots in README"},
-  {v:"v3.5.1",msg:"Fix resizer drag using delta-based approach with full-screen overlay"},
-  {v:"v3.5.1",msg:"Resizer drag: use pointer capture for reliable cross-browser tracking"},
-  {v:"v3.5.1",msg:"Strip lyrics respects selection; Reflow chords (N per line); search clear button; default view toggle; save stays in current view"},
+  {v:"v3.5.2",msg:"Collapsible split entry rows — keyboard SVG always visible, rows toggle with ▲/▼. Also added collapsible Key/Capo/Tempo row."},
+  {v:"v3.5.2",msg:"Collapsible Key / Capo / Tempo / Find chords row in editor — toggle with ▼ button, persisted to data file"},
+  {v:"v3.5.2",msg:"Fix keyboard split label centering and range text clipping below keyboard"},
+  {v:"v3.5.2",msg:"Tab title shows 'Stage Sheets – Song – Artist' in edit view, updates live, restores correctly after printing. Changelog modal with info button."},
+  {v:"v3.5.2",msg:"Keyboard splits: individual key colouring per split, opacity slider with live preview"},
+  {v:"v3.5.2",msg:"MIDI Learn for keyboard splits — press Learn then play two keys to set the split range"},
+  {v:"v3.5.2",msg:"Keyboard splits: map instruments to key ranges, visual SVG keyboard strip in editor and perform view"},
+  {v:"v3.5.2",msg:"Page preview: mask top/bottom margins to prevent text bleed-through between pages"},
+  {v:"v3.5.2",msg:"Page preview: fix overlapping text with scroll-clip multi-page approach"},
+  {v:"v3.5.2",msg:"Page preview: keep title/artist/rule header together, fix page split element positioning"},
+  {v:"v3.5.2",msg:"Page preview: element-aware page splitting so no line is clipped mid-character"},
+  {v:"v3.5.2",msg:"Word-style multi-page preview with discrete page cards and grey desk background"},
+  {v:"v3.5.2",msg:"Individual top/right/bottom/left margin controls with preset buttons (None/Narrow/Normal/Wide)"},
+  {v:"v3.5.2",msg:"Fix submenu positioning (flips upward near screen edge), add New song in folder to right-click menu"},
+  {v:"v3.5.2",msg:"Fix mobile sidebar: remove overlay that was permanently dimming the song list on iOS"},
+  {v:"v3.5.2",msg:"Preserve sidebar scroll position when opening a song from the list"},
+  {v:"v3.5.2",msg:"Fix transpose in edit mode (no longer re-renders editor), fix screenshots in README"},
+  {v:"v3.5.2",msg:"Fix resizer drag using delta-based approach with full-screen overlay"},
+  {v:"v3.5.2",msg:"Resizer drag: use pointer capture for reliable cross-browser tracking"},
+  {v:"v3.5.2",msg:"Strip lyrics respects selection; Reflow chords (N per line); search clear button; default view toggle; save stays in current view"},
 ];
 function showChangelog(){
   if($("clModal")) return;
@@ -1347,7 +1347,8 @@ function renderPerform(s){
   const pageWpx=Math.round(dims.w*PX);
   const pageHpx=Math.round(dims.h*PX);
   const pageBg=printTheme==="dark"?"var(--bg2)":"#f8f6f0";
-  const pageStyle=`--page-w-px:${pageWpx}px;--page-h-px:${pageHpx}px;--page-pad-t:${innerPadT}px;--page-pad-b:${innerPadB}px;--page-pad-l:${innerPadL}px;--page-pad-r:${innerPadR}px;--page-bg:${pageBg}`;
+  const deskBg=printTheme==="dark"?"var(--bg3)":"#e8e4dc";
+  const pageStyle=`--page-w-px:${pageWpx}px;--page-h-px:${pageHpx}px;--page-pad-t:${innerPadT}px;--page-pad-b:${innerPadB}px;--page-pad-l:${innerPadL}px;--page-pad-r:${innerPadR}px;--page-bg:${pageBg};--desk-bg:${deskBg}`;
   const splitsHtml=(s.scenes&&s.scenes.some(sc=>sc.splits.some(sp=>sp.from&&sp.to&&validNote(sp.from)&&validNote(sp.to))))?renderSplitsHTML(s.scenes):"";
   $("main").innerHTML=nowbar()+toolbar(s)+`<div class="scroll" id="scroll" style="${pageStyle}"><div class="page-wrap"><div class="sheet">
       <h1 class="songtitle">${esc(s.title||"Untitled")}</h1>${s.artist?`<div class="artist">${esc(s.artist)}</div>`:""}
