@@ -4,6 +4,9 @@
 stagesheets-data.json
 *.json
 
+# Reference file for all relevant git commands
+stagesheets-git.md
+
 # macOS
 .DS_Store
 
