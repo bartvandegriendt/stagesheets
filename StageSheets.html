@@ -304,7 +304,7 @@
   }
   .printset{display:none}
   @media print{
-    @page{ margin: var(--pm-top,18mm) var(--pm-right,18mm) var(--pm-bottom,18mm) var(--pm-left,18mm); size: var(--print-page-w, 210mm) var(--print-page-h, 297mm); }
+    @page{ margin: 0; size: var(--print-page-w, 210mm) var(--print-page-h, 297mm); }
     html[data-print-theme="light"]{
       --bg:#fff; --bg2:#fff; --bg3:#f4eddd; --bg4:#ece2cb; --line:#ddd3bd;
       --text:#241f16; --muted:#8a7e62; --amber:#a8631c; --amber-dim:#8a5417;
@@ -322,7 +322,7 @@
     .wrap,.main,.scroll{display:block!important;overflow:visible!important;height:auto!important}
     .scroll{padding:0!important;background:var(--page-bg,#1c1914)!important;margin:0!important}
     .page-wrap{width:100%!important;max-width:none!important;box-shadow:none!important;border-radius:0!important;animation:none!important;min-height:0!important;height:auto!important;overflow:visible!important;background:var(--page-bg,#1c1914)!important}
-    .sheet{padding:var(--print-text-pad,8mm)!important;background:transparent!important;animation:none!important}
+    .sheet{padding:var(--page-pad-t,18mm) var(--page-pad-r,18mm) var(--page-pad-b,18mm) var(--page-pad-l,18mm)!important;background:transparent!important;animation:none!important}
     .rule{background:var(--amber-dim)}
     body.printing-set .scroll{display:none!important}
     body.printing-set .printset{display:block!important}
@@ -334,7 +334,7 @@
 <div class="top">
   <div>
     <div class="brand"><span class="dot"></span>STAGE SHEETS</div>
-    <div class="sub">songs &amp; setlists <span style="font-family:'JetBrains Mono';font-size:9px;opacity:.45;letter-spacing:.04em">v3.6.7</span> <button id="changelogBtn" title="What's new" style="background:none;border:1px solid rgba(255,255,255,.15);border-radius:50%;width:14px;height:14px;color:var(--muted);cursor:pointer;font-size:8px;font-weight:700;line-height:1;padding:0;vertical-align:middle;margin-left:3px">i</button></div>
+    <div class="sub">songs &amp; setlists <span style="font-family:'JetBrains Mono';font-size:9px;opacity:.45;letter-spacing:.04em">v3.6.8</span> <button id="changelogBtn" title="What's new" style="background:none;border:1px solid rgba(255,255,255,.15);border-radius:50%;width:14px;height:14px;color:var(--muted);cursor:pointer;font-size:8px;font-weight:700;line-height:1;padding:0;vertical-align:middle;margin-left:3px">i</button></div>
   </div>
   <div class="spacer"></div>
   <input type="file" id="importFile" accept=".json" style="display:none">
@@ -633,26 +633,26 @@ function renderSplitsHTML(scenes){
   </div>`).join("");
 }
 const CHANGELOG=[
-  {v:"v3.6.7",msg:"Collapsible split entry rows — keyboard SVG always visible, rows toggle with ▲/▼. Also added collapsible Key/Capo/Tempo row."},
-  {v:"v3.6.7",msg:"Collapsible Key / Capo / Tempo / Find chords row in editor — toggle with ▼ button, persisted to data file"},
-  {v:"v3.6.7",msg:"Fix keyboard split label centering and range text clipping below keyboard"},
-  {v:"v3.6.7",msg:"Tab title shows 'Stage Sheets – Song – Artist' in edit view, updates live, restores correctly after printing. Changelog modal with info button."},
-  {v:"v3.6.7",msg:"Keyboard splits: individual key colouring per split, opacity slider with live preview"},
-  {v:"v3.6.7",msg:"MIDI Learn for keyboard splits — press Learn then play two keys to set the split range"},
-  {v:"v3.6.7",msg:"Keyboard splits: map instruments to key ranges, visual SVG keyboard strip in editor and perform view"},
-  {v:"v3.6.7",msg:"Page preview: mask top/bottom margins to prevent text bleed-through between pages"},
-  {v:"v3.6.7",msg:"Page preview: fix overlapping text with scroll-clip multi-page approach"},
-  {v:"v3.6.7",msg:"Page preview: keep title/artist/rule header together, fix page split element positioning"},
-  {v:"v3.6.7",msg:"Page preview: element-aware page splitting so no line is clipped mid-character"},
-  {v:"v3.6.7",msg:"Word-style multi-page preview with discrete page cards and grey desk background"},
-  {v:"v3.6.7",msg:"Individual top/right/bottom/left margin controls with preset buttons (None/Narrow/Normal/Wide)"},
-  {v:"v3.6.7",msg:"Fix submenu positioning (flips upward near screen edge), add New song in folder to right-click menu"},
-  {v:"v3.6.7",msg:"Fix mobile sidebar: remove overlay that was permanently dimming the song list on iOS"},
-  {v:"v3.6.7",msg:"Preserve sidebar scroll position when opening a song from the list"},
-  {v:"v3.6.7",msg:"Fix transpose in edit mode (no longer re-renders editor), fix screenshots in README"},
-  {v:"v3.6.7",msg:"Fix resizer drag using delta-based approach with full-screen overlay"},
-  {v:"v3.6.7",msg:"Resizer drag: use pointer capture for reliable cross-browser tracking"},
-  {v:"v3.6.7",msg:"Strip lyrics respects selection; Reflow chords (N per line); search clear button; default view toggle; save stays in current view"},
+  {v:"v3.6.8",msg:"Collapsible split entry rows — keyboard SVG always visible, rows toggle with ▲/▼. Also added collapsible Key/Capo/Tempo row."},
+  {v:"v3.6.8",msg:"Collapsible Key / Capo / Tempo / Find chords row in editor — toggle with ▼ button, persisted to data file"},
+  {v:"v3.6.8",msg:"Fix keyboard split label centering and range text clipping below keyboard"},
+  {v:"v3.6.8",msg:"Tab title shows 'Stage Sheets – Song – Artist' in edit view, updates live, restores correctly after printing. Changelog modal with info button."},
+  {v:"v3.6.8",msg:"Keyboard splits: individual key colouring per split, opacity slider with live preview"},
+  {v:"v3.6.8",msg:"MIDI Learn for keyboard splits — press Learn then play two keys to set the split range"},
+  {v:"v3.6.8",msg:"Keyboard splits: map instruments to key ranges, visual SVG keyboard strip in editor and perform view"},
+  {v:"v3.6.8",msg:"Page preview: mask top/bottom margins to prevent text bleed-through between pages"},
+  {v:"v3.6.8",msg:"Page preview: fix overlapping text with scroll-clip multi-page approach"},
+  {v:"v3.6.8",msg:"Page preview: keep title/artist/rule header together, fix page split element positioning"},
+  {v:"v3.6.8",msg:"Page preview: element-aware page splitting so no line is clipped mid-character"},
+  {v:"v3.6.8",msg:"Word-style multi-page preview with discrete page cards and grey desk background"},
+  {v:"v3.6.8",msg:"Individual top/right/bottom/left margin controls with preset buttons (None/Narrow/Normal/Wide)"},
+  {v:"v3.6.8",msg:"Fix submenu positioning (flips upward near screen edge), add New song in folder to right-click menu"},
+  {v:"v3.6.8",msg:"Fix mobile sidebar: remove overlay that was permanently dimming the song list on iOS"},
+  {v:"v3.6.8",msg:"Preserve sidebar scroll position when opening a song from the list"},
+  {v:"v3.6.8",msg:"Fix transpose in edit mode (no longer re-renders editor), fix screenshots in README"},
+  {v:"v3.6.8",msg:"Fix resizer drag using delta-based approach with full-screen overlay"},
+  {v:"v3.6.8",msg:"Resizer drag: use pointer capture for reliable cross-browser tracking"},
+  {v:"v3.6.8",msg:"Strip lyrics respects selection; Reflow chords (N per line); search clear button; default view toggle; save stays in current view"},
 ];
 function showChangelog(){
   if($("clModal")) return;
@@ -2138,6 +2138,12 @@ function applyPrintTheme(){
   root.style.setProperty("--pm-left", marginLeft+"mm");
   root.style.setProperty("--pm-right", marginRight+"mm");
   root.style.setProperty("--print-text-pad", PADDINGS[printPadding]||"8mm");
+  // Set page-pad vars in mm for use by .sheet padding in print
+  const padMm=({none:0,small:4,normal:8,generous:14}[printPadding]||8);
+  root.style.setProperty("--page-pad-t",(marginTop+padMm)+"mm");
+  root.style.setProperty("--page-pad-b",(marginBottom+padMm)+"mm");
+  root.style.setProperty("--page-pad-l",(marginLeft+padMm)+"mm");
+  root.style.setProperty("--page-pad-r",(marginRight+padMm)+"mm");
   root.style.setProperty("--print-padding", PADDINGS[printPadding]||"8mm");
   const dims=getPageDims();
   root.style.setProperty("--print-page-w", dims.w+"mm");
@@ -2149,6 +2155,9 @@ function applyPrintTheme(){
     root.style.removeProperty("--pm-top"); root.style.removeProperty("--pm-bottom");
     root.style.removeProperty("--pm-left"); root.style.removeProperty("--pm-right");
     root.style.removeProperty("--print-padding");
+    root.style.removeProperty("--print-text-pad");
+    root.style.removeProperty("--page-pad-t"); root.style.removeProperty("--page-pad-b");
+    root.style.removeProperty("--page-pad-l"); root.style.removeProperty("--page-pad-r");
     root.style.removeProperty("--print-page-w");
     root.style.removeProperty("--print-page-h");
     // restore proper title after PDF save dialog closes
