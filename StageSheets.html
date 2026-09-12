@@ -113,7 +113,7 @@
   .ctl .val{min-width:34px;text-align:center;font-family:"JetBrains Mono";font-size:13px;color:var(--amber)}
   .grow{flex:1}
   .scroll{flex:1;overflow:auto;min-height:0;padding:24px 24px 80px;background:var(--desk-bg,var(--bg3))}
-  .page-wrap{margin:0 auto;width:var(--page-w-px,794px);max-width:100%;background:var(--page-bg,var(--bg2));box-shadow:0 6px 32px rgba(0,0,0,.45);border-radius:2px;animation:fadeUp .34s ease both;min-height:var(--page-h-px,200px)}
+  .page-wrap{margin:0 auto;width:var(--page-w-px,794px);max-width:100%;background:var(--page-bg,var(--bg2));box-shadow:0 6px 32px rgba(0,0,0,.45);border-radius:2px;animation:fadeUp .34s ease both;min-height:var(--page-h-px,1123px);height:var(--page-h-px,1123px);overflow:hidden}
   .sheet{background:transparent;padding:var(--page-pad-t,24px) var(--page-pad-r,24px) var(--page-pad-b,24px) var(--page-pad-l,24px)}
   [data-theme="light"] .page-wrap{box-shadow:0 4px 20px rgba(0,0,0,.18)}
   @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
@@ -197,6 +197,9 @@
   .pb-btn{border:1px solid var(--line);background:var(--bg3);color:var(--text);padding:5px 11px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:"Barlow"}
   .pb-btn:hover{border-color:var(--amber-dim);color:var(--amber)}
   .pb-btn.primary{background:var(--amber);border-color:var(--amber);color:#1a1408}
+  .fm-btn{display:block;width:100%;text-align:left;background:none;border:none;color:var(--text);padding:7px 12px;border-radius:8px;cursor:pointer;font-family:"Barlow";font-size:13px;font-weight:600;white-space:nowrap}
+  .fm-btn:hover{background:var(--bg3);color:var(--amber)}
+  .fm-btn.primary{color:var(--amber)}
   .pb-btn.primary:hover{filter:brightness(1.08)}
   .folder-hd{display:flex;align-items:center;gap:7px;padding:7px 8px 7px 10px;border-radius:9px;cursor:pointer;user-select:none;margin-bottom:2px}
   .folder-hd:hover{background:var(--bg3)}
@@ -301,7 +304,7 @@
   }
   .printset{display:none}
   @media print{
-    @page{ margin: 0; size: var(--print-page-w, 210mm) var(--print-page-h, 297mm); }
+    @page{ margin: var(--pm-top,18mm) var(--pm-right,18mm) var(--pm-bottom,18mm) var(--pm-left,18mm); size: var(--print-page-w, 210mm) var(--print-page-h, 297mm); }
     html[data-print-theme="light"]{
       --bg:#fff; --bg2:#fff; --bg3:#f4eddd; --bg4:#ece2cb; --line:#ddd3bd;
       --text:#241f16; --muted:#8a7e62; --amber:#a8631c; --amber-dim:#8a5417;
@@ -318,8 +321,8 @@
     .top,.side,.toolbar,.nowbar,#projectBar,.editor{display:none!important}
     .wrap,.main,.scroll{display:block!important;overflow:visible!important;height:auto!important}
     .scroll{padding:0!important;background:var(--page-bg,#1c1914)!important;margin:0!important}
-    .page-wrap{width:100%!important;max-width:none!important;box-shadow:none!important;border-radius:0!important;animation:none!important;min-height:0!important;background:var(--page-bg,#1c1914)!important}
-    .sheet{padding:var(--page-pad-t,18mm) var(--page-pad-r,18mm) var(--page-pad-b,18mm) var(--page-pad-l,18mm)!important;background:transparent!important;animation:none!important}
+    .page-wrap{width:100%!important;max-width:none!important;box-shadow:none!important;border-radius:0!important;animation:none!important;min-height:0!important;height:auto!important;overflow:visible!important;background:var(--page-bg,#1c1914)!important}
+    .sheet{padding:var(--print-text-pad,8mm)!important;background:transparent!important;animation:none!important}
     .rule{background:var(--amber-dim)}
     body.printing-set .scroll{display:none!important}
     body.printing-set .printset{display:block!important}
@@ -331,10 +334,11 @@
 <div class="top">
   <div>
     <div class="brand"><span class="dot"></span>STAGE SHEETS</div>
-    <div class="sub">songs &amp; setlists <span style="font-family:'JetBrains Mono';font-size:9px;opacity:.45;letter-spacing:.04em">v3.5.3</span> <button id="changelogBtn" title="What's new" style="background:none;border:1px solid rgba(255,255,255,.15);border-radius:50%;width:14px;height:14px;color:var(--muted);cursor:pointer;font-size:8px;font-weight:700;line-height:1;padding:0;vertical-align:middle;margin-left:3px">i</button></div>
+    <div class="sub">songs &amp; setlists <span style="font-family:'JetBrains Mono';font-size:9px;opacity:.45;letter-spacing:.04em">v3.6.5</span> <button id="changelogBtn" title="What's new" style="background:none;border:1px solid rgba(255,255,255,.15);border-radius:50%;width:14px;height:14px;color:var(--muted);cursor:pointer;font-size:8px;font-weight:700;line-height:1;padding:0;vertical-align:middle;margin-left:3px">i</button></div>
   </div>
   <div class="spacer"></div>
   <input type="file" id="importFile" accept=".json" style="display:none">
+  <button class="iconbtn" id="fileMenuBtn" title="File">💾 File ▾</button>
   <label class="view-toggle" title="Default view when opening a song">
     <span class="view-toggle-lbl">Perform</span>
     <span class="switch" id="defaultViewSwitch">
@@ -348,23 +352,9 @@
   <button class="iconbtn" id="themeBtn">◐ Theme</button>
 </div>
 
-<div class="pb" id="projectBar">
-  <span class="pb-dot" id="pbDot"></span>
-  <span class="pb-status" id="pbStatus">Saved locally</span>
-  <div class="pb-actions" id="pbActions">
-    <button class="pb-btn" id="pbOpen">📂 Open…</button>
-    <button class="pb-btn primary" id="pbSave" style="display:none">💾 Save</button>
-    <button class="pb-btn" id="pbSaveAs">💾 Save as…</button>
-    <button class="pb-btn primary" id="pbReconnect" style="display:none">🔗 Reconnect file</button>
-    <!-- non-FSA fallback (iOS) -->
-    <button class="pb-btn" id="pbLoadFile" style="display:none">📂 Load JSON</button>
-    <button class="pb-btn primary" id="pbDownload" style="display:none">💾 Save JSON</button>
-  </div>
-</div>
-
 <div class="wrap">
   <aside class="side" id="side">
-    <div class="tabs"><button id="tabSongs">SONGS</button><button id="tabSets">SETS</button></div>
+    <div class="tabs"><button id="tabSongs" class="on">SONGS</button></div>
     <div id="panel" style="display:flex;flex-direction:column;flex:1;min-height:0"></div>
   </aside>
   <section class="main" id="main"></section>
@@ -372,6 +362,17 @@
 
 <div class="printset" id="printset"></div>
 
+<div id="fileMenu" style="display:none;position:fixed;background:var(--bg2);border:1px solid var(--line);border-radius:11px;padding:5px;min-width:180px;z-index:9999;box-shadow:0 8px 32px rgba(0,0,0,.7)">
+  <button class="fm-btn" id="pbOpen">📂 Open…</button>
+  <button class="fm-btn primary" id="pbSave" style="display:none">💾 Save</button>
+  <button class="fm-btn" id="pbSaveAs">💾 Save as…</button>
+  <button class="fm-btn primary" id="pbReconnect" style="display:none">🔗 Reconnect file</button>
+  <button class="fm-btn" id="pbLoadFile" style="display:none">📂 Load JSON</button>
+  <button class="fm-btn primary" id="pbDownload" style="display:none">💾 Save JSON</button>
+  <hr style="border:none;border-top:1px solid var(--line);margin:4px 0">
+  <button class="fm-btn" id="importBtn">⬆ Import library…</button>
+  <div id="pbStatusLine" style="padding:6px 12px;font-size:11px;font-family:'JetBrains Mono';color:var(--muted)">Saved locally</div>
+</div>
 <script>
 "use strict";
 
@@ -383,14 +384,16 @@ const FSA = ("showOpenFilePicker" in window);
 let fileHandle=null, savedHandle=null, dataName="stagesheets-data.json", autosaveT=null;
 
 function setSaveStatus(kind, extra){
-  const dot=$("pbDot"), txt=$("pbStatus");
-  dot.className="pb-dot"+(kind&&kind!=="local"?" "+kind:"");
+  const sl=$("pbStatusLine"), btn=$("fileMenuBtn");
   const labels={local:"Saved locally",saved:"Saved"+(extra?" at "+extra:""),saving:"Saving…",dirty:"Unsaved changes",error:"Save failed"};
-  txt.textContent=labels[kind]||"";
+  if(sl) sl.textContent=labels[kind]||"";
+  if(btn){
+    const dot=kind==="saved"?"🟢 ":kind==="dirty"?"🟡 ":kind==="error"?"🔴 ":"";
+    btn.textContent=dot+"💾 File ▾";
+  }
 }
 function renderProjectBar(){
   if(FSA){
-    // Desktop: FSA buttons
     $("pbOpen").style.display="";
     $("pbSaveAs").style.display="";
     $("pbSave").style.display=fileHandle?"":"none";
@@ -400,7 +403,6 @@ function renderProjectBar(){
     $("pbDownload").style.display="none";
     if(!fileHandle&&!savedHandle) setSaveStatus("local");
   } else {
-    // iOS / non-FSA: download + file-input buttons
     $("pbOpen").style.display="none";
     $("pbSave").style.display="none";
     $("pbSaveAs").style.display="none";
@@ -622,26 +624,26 @@ function renderSplitsHTML(scenes){
   </div>`).join("");
 }
 const CHANGELOG=[
-  {v:"v3.5.3",msg:"Collapsible split entry rows — keyboard SVG always visible, rows toggle with ▲/▼. Also added collapsible Key/Capo/Tempo row."},
-  {v:"v3.5.3",msg:"Collapsible Key / Capo / Tempo / Find chords row in editor — toggle with ▼ button, persisted to data file"},
-  {v:"v3.5.3",msg:"Fix keyboard split label centering and range text clipping below keyboard"},
-  {v:"v3.5.3",msg:"Tab title shows 'Stage Sheets – Song – Artist' in edit view, updates live, restores correctly after printing. Changelog modal with info button."},
-  {v:"v3.5.3",msg:"Keyboard splits: individual key colouring per split, opacity slider with live preview"},
-  {v:"v3.5.3",msg:"MIDI Learn for keyboard splits — press Learn then play two keys to set the split range"},
-  {v:"v3.5.3",msg:"Keyboard splits: map instruments to key ranges, visual SVG keyboard strip in editor and perform view"},
-  {v:"v3.5.3",msg:"Page preview: mask top/bottom margins to prevent text bleed-through between pages"},
-  {v:"v3.5.3",msg:"Page preview: fix overlapping text with scroll-clip multi-page approach"},
-  {v:"v3.5.3",msg:"Page preview: keep title/artist/rule header together, fix page split element positioning"},
-  {v:"v3.5.3",msg:"Page preview: element-aware page splitting so no line is clipped mid-character"},
-  {v:"v3.5.3",msg:"Word-style multi-page preview with discrete page cards and grey desk background"},
-  {v:"v3.5.3",msg:"Individual top/right/bottom/left margin controls with preset buttons (None/Narrow/Normal/Wide)"},
-  {v:"v3.5.3",msg:"Fix submenu positioning (flips upward near screen edge), add New song in folder to right-click menu"},
-  {v:"v3.5.3",msg:"Fix mobile sidebar: remove overlay that was permanently dimming the song list on iOS"},
-  {v:"v3.5.3",msg:"Preserve sidebar scroll position when opening a song from the list"},
-  {v:"v3.5.3",msg:"Fix transpose in edit mode (no longer re-renders editor), fix screenshots in README"},
-  {v:"v3.5.3",msg:"Fix resizer drag using delta-based approach with full-screen overlay"},
-  {v:"v3.5.3",msg:"Resizer drag: use pointer capture for reliable cross-browser tracking"},
-  {v:"v3.5.3",msg:"Strip lyrics respects selection; Reflow chords (N per line); search clear button; default view toggle; save stays in current view"},
+  {v:"v3.6.5",msg:"Collapsible split entry rows — keyboard SVG always visible, rows toggle with ▲/▼. Also added collapsible Key/Capo/Tempo row."},
+  {v:"v3.6.5",msg:"Collapsible Key / Capo / Tempo / Find chords row in editor — toggle with ▼ button, persisted to data file"},
+  {v:"v3.6.5",msg:"Fix keyboard split label centering and range text clipping below keyboard"},
+  {v:"v3.6.5",msg:"Tab title shows 'Stage Sheets – Song – Artist' in edit view, updates live, restores correctly after printing. Changelog modal with info button."},
+  {v:"v3.6.5",msg:"Keyboard splits: individual key colouring per split, opacity slider with live preview"},
+  {v:"v3.6.5",msg:"MIDI Learn for keyboard splits — press Learn then play two keys to set the split range"},
+  {v:"v3.6.5",msg:"Keyboard splits: map instruments to key ranges, visual SVG keyboard strip in editor and perform view"},
+  {v:"v3.6.5",msg:"Page preview: mask top/bottom margins to prevent text bleed-through between pages"},
+  {v:"v3.6.5",msg:"Page preview: fix overlapping text with scroll-clip multi-page approach"},
+  {v:"v3.6.5",msg:"Page preview: keep title/artist/rule header together, fix page split element positioning"},
+  {v:"v3.6.5",msg:"Page preview: element-aware page splitting so no line is clipped mid-character"},
+  {v:"v3.6.5",msg:"Word-style multi-page preview with discrete page cards and grey desk background"},
+  {v:"v3.6.5",msg:"Individual top/right/bottom/left margin controls with preset buttons (None/Narrow/Normal/Wide)"},
+  {v:"v3.6.5",msg:"Fix submenu positioning (flips upward near screen edge), add New song in folder to right-click menu"},
+  {v:"v3.6.5",msg:"Fix mobile sidebar: remove overlay that was permanently dimming the song list on iOS"},
+  {v:"v3.6.5",msg:"Preserve sidebar scroll position when opening a song from the list"},
+  {v:"v3.6.5",msg:"Fix transpose in edit mode (no longer re-renders editor), fix screenshots in README"},
+  {v:"v3.6.5",msg:"Fix resizer drag using delta-based approach with full-screen overlay"},
+  {v:"v3.6.5",msg:"Resizer drag: use pointer capture for reliable cross-browser tracking"},
+  {v:"v3.6.5",msg:"Strip lyrics respects selection; Reflow chords (N per line); search clear button; default view toggle; save stays in current view"},
 ];
 function showChangelog(){
   if($("clModal")) return;
@@ -713,7 +715,7 @@ const setById=id=>setlists.find(s=>s.id===id);
 const folderById=id=>folders.find(f=>f.id===id);
 const ugUrl=(t,a)=>"https://www.ultimate-guitar.com/search.php?search_type=title&value="+encodeURIComponent([t||"",a||""].filter(Boolean).join(" "));
 function persist(){ DB.save(buildPayload()); }
-function buildPayload(){ return {songs,setlists,folders,theme,printTheme,printMargin,printPadding,pdfOrder,pageSize,pageSizeCustomW,pageSizeCustomH,previewSplit,previewZoom,showPreview,defaultView,marginTop,marginBottom,marginLeft,marginRight,showMetaFields,showSplitFields,saved:new Date().toISOString()}; }
+function buildPayload(){ return {songs,setlists,folders,theme,printTheme,printMargin,printPadding,pdfOrder,pageSize,pageSizeCustomW,pageSizeCustomH,previewSplit,previewZoom,showPreview,defaultView,marginTop,marginBottom,marginLeft,marginRight,showMetaFields,showSplitFields,collapsedFolderIds:[...collapsedFolders],saved:new Date().toISOString()}; }
 function loadFromData(d){
   songs=(d.songs||[]).map(migrateSong); setlists=d.setlists||[]; folders=d.folders||[];
   theme=d.theme||"dark"; printTheme=d.printTheme||"light";
@@ -721,7 +723,7 @@ function loadFromData(d){
   pageSize=d.pageSize||"A4"; pageSizeCustomW=d.pageSizeCustomW||210; pageSizeCustomH=d.pageSizeCustomH||297; previewSplit=d.previewSplit||50; previewZoom=d.previewZoom||0; showPreview=d.showPreview!==false; defaultView=d.defaultView||"perform";
   currentId=songs.filter(s=>!s.archived)[0]?.id||null;
   context={type:"library",setId:null}; transpose=0;
-  tab="songs"; openSetId=null; filter=""; collapsedFolders=new Set();
+  tab="songs"; openSetId=null; filter=""; collapsedFolders=new Set(d.collapsedFolderIds||[]);
   document.documentElement.setAttribute("data-theme",theme);
   renderProjectBar();
   setTimeout(()=>{ renderSidebar(); renderMain(); const dvChk2=$("defaultViewChk"); if(dvChk2) dvChk2.checked=defaultView==="edit"; }, 0);
@@ -733,11 +735,9 @@ function songMeta(s){return [s.key&&"Key "+s.key,s.capo&&"Capo "+s.capo,s.tempo&
    SIDEBAR — songs panel, folders, drag-drop, context menus, sets
    ═══════════════════════════════════════════════════════════════ */
 function renderSidebar(){
-  $("tabSongs").className=tab==="songs"?"on":""; $("tabSets").className=tab==="sets"?"on":"";
+  $("tabSongs").className="on";
   const p=$("panel");
-  if(tab==="songs"){ p.innerHTML=songsPanel(); wireSongsPanel(); }
-  else if(openSetId){ p.innerHTML=setDetailPanel(); wireSetDetail(); }
-  else { p.innerHTML=setsPanel(); wireSetsPanel(); }
+  p.innerHTML=songsPanel(); wireSongsPanel();
 }
 
 /* ---- context menu ---- */
@@ -860,7 +860,7 @@ function wireSongRows(){
     };
   });
   list.querySelectorAll(".folder-hd[data-toggle]").forEach(hd=>{
-    hd.onclick=e=>{if(e.target.closest(".folder-drag"))return;const id=hd.dataset.toggle;collapsedFolders.has(id)?collapsedFolders.delete(id):collapsedFolders.add(id);renderSidebar();};
+    hd.onclick=e=>{if(e.target.closest(".folder-drag"))return;const id=hd.dataset.toggle;collapsedFolders.has(id)?collapsedFolders.delete(id):collapsedFolders.add(id);persist();renderSidebar();};
     hd.oncontextmenu=e=>folderCtxMenu(e,hd.dataset.toggle);
     hd.ondragover=e=>{e.preventDefault();hd.classList.add("drag-over");};
     hd.ondragleave=()=>hd.classList.remove("drag-over");
@@ -1007,9 +1007,10 @@ function folderCtxMenu(e,id){
   const depth=folderDepth(id);
   showCtx(e,[
     {label:"New song in this folder",fn:()=>{
-      const s={id:uid(),title:"",artist:"",key:"",capo:"",tempo:"",chords:"",transpose:0,folderId:id,created:Date.now(),updated:Date.now()};
+      const s={id:uid(),title:"",artist:"",key:"",capo:"",tempo:"",chords:"",transpose:0,scenes:[{id:uid(),name:"Scene 1",splits:[]}],activeScene:0,folderId:id,created:Date.now(),updated:Date.now()};
       songs.push(s); currentId=s.id; context={type:"library",setId:null}; transpose=0; view="edit";
-      persist(); tab="songs"; renderSidebar(); renderMain();
+      collapsedFolders.delete(id); // make sure the folder is expanded so the song is visible
+      persist(); renderSidebar(); renderMain();
       setTimeout(()=>{const t=$("fTitle");if(t)t.focus();},30);
       if(window.innerWidth<=780) $("side").classList.add("hidden");
     }},
@@ -1339,6 +1340,10 @@ function renderPerform(s){
   const dims=getPageDims();
   const PX=3.7795;
   const padMm=({none:0,small:4,normal:8,generous:14}[printPadding]||8);
+  // Margin = outer page margin (white space at edge of paper)
+  // Text pad = inner padding around content block
+  // In preview: both combined as sheet padding to simulate the paper
+  // In print: @page handles margin, sheet padding handles text pad only
   const innerPadT=Math.round((padMm+marginTop)*PX);
   const innerPadB=Math.round((padMm+marginBottom)*PX);
   const innerPadL=Math.round((padMm+marginLeft)*PX);
@@ -1398,7 +1403,7 @@ function renderEditor(s){
     </div>
 
     <!-- MID: chords + preview (fills remaining space) -->
-    <div class="ed-mid" id="edMid" style="grid-template-columns:${showPreview?previewSplit+'fr 12px '+(100-previewSplit)+'fr':'1fr'}">
+    <div class="ed-mid" id="edMid" style="grid-template-columns:${showPreview?'1fr 1fr':'1fr'}">
       <div class="ed-mid-left">
         <label style="color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.1em;display:flex;align-items:center;gap:10px">
           Chords &amp; formatting
@@ -1433,7 +1438,6 @@ function renderEditor(s){
         </div>
         <textarea id="fChords" placeholder="# Section heading&#10;[Verse]&#10;A            E&#10;Placeholder lyric line...">${esc(s.chords||"")}</textarea>
       </div>
-      <div class="ed-resizer" id="edResizer" style="${showPreview?'':'display:none'}" title="Drag to resize"></div>
       <div class="ed-preview-col" id="edPreviewCol" style="${showPreview?'':'display:none'}">
         <div class="ed-preview-label">
           Preview <span id="previewSizeLabel">${sheetSize}px</span> · <span id="previewPageLabel" style="color:var(--muted)">${pageSize==="Custom"?pageSizeCustomW+"×"+pageSizeCustomH+" mm":PAGE_SIZES[pageSize]?.label||pageSize}</span>
@@ -1530,7 +1534,7 @@ function renderEditor(s){
         const deltaPct=((ev.clientX-startX)/midW)*100;
         const clamped=Math.max(15,Math.min(85,startSplit+deltaPct));
         previewSplit=Math.round(clamped);
-        mid.style.gridTemplateColumns=`${previewSplit}fr 12px ${100-previewSplit}fr`;
+        
         scalePreview();
       };
       const stop=()=>{
@@ -1550,7 +1554,7 @@ function renderEditor(s){
       const col=$("edPreviewCol"), res=$("edResizer");
       if(col) col.style.display=showPreview?"":"none";
       if(res) res.style.display=showPreview?"":"none";
-      mid.style.gridTemplateColumns=showPreview?`${previewSplit}fr 12px ${100-previewSplit}fr`:"1fr";
+      mid.style.gridTemplateColumns=showPreview?'1fr 1fr':"1fr";
       if(showPreview) setTimeout(scalePreview,50);
       persist();
     };
@@ -1771,7 +1775,7 @@ function renderEditor(s){
   $("fmtStripLyrics").onclick=stripLyrics;
   $("fmtReflow").onclick=reflowChords;
   $("fmtHelp").onclick=showHelp;
-  $("saveBtn").onclick=()=>{s.title=$("fTitle").value.trim();s.artist=$("fArtist").value.trim();s.key=$("fKey").value.trim();s.capo=$("fCapo").value.trim();s.tempo=$("fTempo").value.trim();s.chords=$("fChords").value;s.updated=Date.now();persist();renderSidebar();renderMain();};
+  $("saveBtn").onclick=()=>{s.title=$("fTitle").value.trim();s.artist=$("fArtist").value.trim();s.key=$("fKey").value.trim();s.capo=$("fCapo").value.trim();s.tempo=$("fTempo").value.trim();s.chords=$("fChords").value;s.updated=Date.now();persist();const _sl=$("list");const _st=_sl?_sl.scrollTop:0;renderSidebar();const _sl2=$("list");if(_sl2&&_st)_sl2.scrollTop=_st;renderMain();};
   wireSplitsEditor(s);
   $("delBtn").onclick=()=>{if(!confirm("Delete “"+(s.title||"Untitled")+"”?"))return;songs=songs.filter(x=>x.id!==s.id);setlists.forEach(sl=>sl.songIds=sl.songIds.filter(id=>id!==s.id));currentId=songs[0]?songs[0].id:null;context={type:"library",setId:null};persist();renderSidebar();renderMain();};
 }
@@ -2120,6 +2124,7 @@ function applyPrintTheme(){
   root.style.setProperty("--pm-bottom", marginBottom+"mm");
   root.style.setProperty("--pm-left", marginLeft+"mm");
   root.style.setProperty("--pm-right", marginRight+"mm");
+  root.style.setProperty("--print-text-pad", PADDINGS[printPadding]||"8mm");
   root.style.setProperty("--print-padding", PADDINGS[printPadding]||"8mm");
   const dims=getPageDims();
   root.style.setProperty("--print-page-w", dims.w+"mm");
@@ -2173,8 +2178,24 @@ function downloadJSON(){
   a.download=dataName; a.click(); URL.revokeObjectURL(a.href);
   setSaveStatus("saved",new Date().toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"}));
 }
-$("pbLoadFile").onclick=()=>$("importFile").click();
-$("pbDownload").onclick=downloadJSON;
+// file menu dropdown
+const fileMenuBtn=$("fileMenuBtn"), fileMenu=$("fileMenu");
+fileMenuBtn.onclick=e=>{
+  e.stopPropagation();
+  const open=fileMenu.style.display==="none";
+  fileMenu.style.display=open?"block":"none";
+  if(open){
+    const r=fileMenuBtn.getBoundingClientRect();
+    fileMenu.style.top=(r.bottom+6)+"px";
+    fileMenu.style.right=(window.innerWidth-r.right)+"px";
+    fileMenu.style.left="auto";
+  }
+};
+document.addEventListener("click",()=>{if(fileMenu)fileMenu.style.display="none";});
+fileMenu.addEventListener("click",e=>e.stopPropagation());
+$("importBtn").onclick=()=>{$("importFile").click();fileMenu.style.display="none";};
+$("pbLoadFile").onclick=()=>{$("importFile").click();fileMenu.style.display="none";};
+$("pbDownload").onclick=()=>{downloadJSON();fileMenu.style.display="none";};
 $("importFile").onchange=e=>{importData(e.target.files[0]); e.target.value="";};
 
 /* top bar + help */
@@ -2194,8 +2215,6 @@ function showHelp(){const m=document.createElement("div");m.className="modal";
     <b>[ ]</b><span>Smaller / larger text</span></div>
     <div style="text-align:right;margin-top:16px"><button class="btn" id="mCloseH">Close</button></div></div>`;
   m.onclick=e=>{if(e.target===m||e.target.id==="mCloseH")m.remove();};document.body.appendChild(m);}
-$("tabSongs").onclick=()=>{tab="songs";renderSidebar();};
-$("tabSets").onclick=()=>{tab="sets";openSetId=null;renderSidebar();};
 $("themeBtn").onclick=()=>{theme=theme==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",theme);persist();};
 function toggleSidebar(){
   const side=$("side");
@@ -2224,7 +2243,7 @@ document.addEventListener("keydown",e=>{const tag=(e.target.tagName||"").toLower
     case "]":sheetSize=Math.min(42,sheetSize+1);renderMain();break; case "[":sheetSize=Math.max(11,sheetSize-1);renderMain();break;
   }});
 
-(async function init(){const d=await DB.load();if(d){songs=(d.songs||[]).map(migrateSong);setlists=d.setlists||[];folders=d.folders||[];theme=d.theme||"dark";printTheme=d.printTheme||"light";printMargin=d.printMargin||"normal";printPadding=d.printPadding||"normal";pdfOrder=d.pdfOrder||"artist-title";marginTop=d.marginTop??18;marginBottom=d.marginBottom??18;marginLeft=d.marginLeft??18;marginRight=d.marginRight??18;showMetaFields=d.showMetaFields!==false;showSplitFields=d.showSplitFields!==false;pageSize=d.pageSize||"A4";pageSizeCustomW=d.pageSizeCustomW||210;pageSizeCustomH=d.pageSizeCustomH||297;previewSplit=d.previewSplit||50;previewZoom=d.previewZoom||0;showPreview=d.showPreview!==false;defaultView=d.defaultView||"perform";}
+(async function init(){const d=await DB.load();if(d){songs=(d.songs||[]).map(migrateSong);setlists=d.setlists||[];folders=d.folders||[];theme=d.theme||"dark";printTheme=d.printTheme||"light";printMargin=d.printMargin||"normal";printPadding=d.printPadding||"normal";pdfOrder=d.pdfOrder||"artist-title";marginTop=d.marginTop??18;marginBottom=d.marginBottom??18;marginLeft=d.marginLeft??18;marginRight=d.marginRight??18;showMetaFields=d.showMetaFields!==false;showSplitFields=d.showSplitFields!==false;pageSize=d.pageSize||"A4";pageSizeCustomW=d.pageSizeCustomW||210;pageSizeCustomH=d.pageSizeCustomH||297;previewSplit=d.previewSplit||50;previewZoom=d.previewZoom||0;showPreview=d.showPreview!==false;defaultView=d.defaultView||"perform";collapsedFolders=new Set(d.collapsedFolderIds||[]);}
   if(!songs.length){songs=[{id:uid(),title:"Demo — delete me",artist:"How it renders",key:"C",capo:"0",tempo:"100",transpose:0,
     chords:"# Part One\n[Intro]\nC        G        Am       F\n\n[Verse]\nC                 G\nThis is a placeholder lyric line\nAm                F\nchords sit right above the words\n\n## A louder section\n[Chorus]\nF     G      C        Am\n{red:watch the modulation here}\nF     G      C\npaste real chords over this",updated:Date.now()}];}
   currentId=songs[0].id;
@@ -2237,7 +2256,26 @@ document.addEventListener("keydown",e=>{const tag=(e.target.tagName||"").toLower
       if(savedHandle&&await ensureRW(savedHandle)){fileHandle=savedHandle;renderProjectBar();setSaveStatus("saving");writeFile();}
     });
     loadHandleFromIDB(async h=>{
-      if(h){ savedHandle=h; renderProjectBar(); }
+      if(!h) return;
+      savedHandle=h;
+      // Try silent reconnect — queryPermission needs no user gesture
+      try{
+        const perm=await h.queryPermission({mode:"readwrite"});
+        if(perm==="granted"){
+          // Already have permission — load the file silently
+          const file=await h.getFile();
+          const text=await file.text();
+          const d=JSON.parse(text);
+          if(Array.isArray(d.songs)){
+            fileHandle=h; loadFromData(d);
+            setSaveStatus("saved",new Date().toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"}));
+            renderProjectBar(); return;
+          }
+        }
+      }catch(e){}
+      // Permission not granted yet — show reconnect banner, wait for user gesture
+      renderProjectBar();
+      showReconnectBanner(h);
     });
     document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="hidden"&&fileHandle){clearTimeout(autosaveT);writeFile();} });
   }
@@ -2245,5 +2283,32 @@ document.addEventListener("keydown",e=>{const tag=(e.target.tagName||"").toLower
   if(window.innerWidth<=780) $("side").classList.add("hidden");
   renderSidebar(); renderMain();
 })();
+
+function showReconnectBanner(h){
+  const existing=$("reconnectBanner"); if(existing) return;
+  const banner=document.createElement("div");
+  banner.id="reconnectBanner";
+  banner.style.cssText="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid var(--amber-dim);border-radius:12px;padding:12px 20px;display:flex;align-items:center;gap:12px;z-index:9000;box-shadow:0 4px 24px rgba(0,0,0,.6);font-family:'Barlow';font-size:14px;color:var(--text);cursor:pointer";
+  banner.innerHTML=`<span style="font-size:18px">🔗</span><span>Reconnect to <b>${h.name||"stagesheets-data.json"}</b> to load your library</span><button style="background:var(--amber);border:none;color:#1a1408;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Barlow'">Reconnect</button>`;
+  banner.onclick=async()=>{
+    if(await ensureRW(h)){
+      try{
+        const file=await h.getFile();
+        const text=await file.text();
+        const d=JSON.parse(text);
+        if(Array.isArray(d.songs)){
+          fileHandle=h; savedHandle=h;
+          loadFromData(d);
+          setSaveStatus("saved",new Date().toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"}));
+          renderProjectBar();
+        }
+      }catch(e){ setSaveStatus("error"); }
+    }
+    banner.remove();
+  };
+  document.body.appendChild(banner);
+  // auto-dismiss after 30s
+  setTimeout(()=>banner.remove(), 30000);
+}
 </script>
 </body></html>
