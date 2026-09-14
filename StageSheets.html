@@ -334,7 +334,7 @@
 <div class="top">
   <div>
     <div class="brand"><span class="dot"></span>STAGE SHEETS</div>
-    <div class="sub">songs &amp; setlists <span style="font-family:'JetBrains Mono';font-size:9px;opacity:.45;letter-spacing:.04em">v3.6.9</span> <button id="changelogBtn" title="What's new" style="background:none;border:1px solid rgba(255,255,255,.15);border-radius:50%;width:14px;height:14px;color:var(--muted);cursor:pointer;font-size:8px;font-weight:700;line-height:1;padding:0;vertical-align:middle;margin-left:3px">i</button></div>
+    <div class="sub">songs &amp; setlists <span style="font-family:'JetBrains Mono';font-size:9px;opacity:.45;letter-spacing:.04em">v3.7.0</span> <button id="changelogBtn" title="What's new" style="background:none;border:1px solid rgba(255,255,255,.15);border-radius:50%;width:14px;height:14px;color:var(--muted);cursor:pointer;font-size:8px;font-weight:700;line-height:1;padding:0;vertical-align:middle;margin-left:3px">i</button></div>
   </div>
   <div class="spacer"></div>
   <input type="file" id="importFile" accept=".json" style="display:none">
@@ -624,6 +624,7 @@ function renderSplitsHTML(scenes){
   </div>`).join("");
 }
 const CHANGELOG=[
+  {v:"v3.7.0",msg:"Fix duplicate line at page break — break before straddling element, add bottom mask buffer"},
   {v:"v3.6.9",msg:"Remove background graphics toast — no longer needed with @page margin:0"},
   {v:"v3.6.8",msg:"Restore @page margin:0; fix CHANGELOG version labels corrupted by sed"},
   {v:"v3.6.8",msg:"Restore @page margin:0 so dark background prints edge-to-edge without white border — sheet padding handles all margin spacing in mm"},
@@ -1589,16 +1590,24 @@ function renderEditor(s){
     // Collect the offsetTop of each child so we know where page breaks fall
     const breaks=[0]; // y positions where each page starts (in content-area coords)
     let pageEnd=contentH;
+    let lastFitBottom=0;
     for(const el of m.children){
-      const elBot=el.offsetTop+el.offsetHeight;
-      if(el.offsetTop>=pageEnd){
-        // element starts on a new page
-        breaks.push(el.offsetTop);
-        pageEnd=el.offsetTop+contentH;
+      const elTop=el.offsetTop;
+      const elBot=elTop+el.offsetHeight;
+      if(elTop>=pageEnd){
+        // element starts on or after end of current page — start new page at this element
+        breaks.push(elTop);
+        pageEnd=elTop+contentH;
+        lastFitBottom=elBot;
       } else if(elBot>pageEnd){
-        // element straddles boundary — push it to the next page
-        breaks.push(el.offsetTop);
-        pageEnd=el.offsetTop+contentH;
+        // element straddles boundary — break BEFORE this element
+        // use lastFitBottom as the break so no content from current page bleeds through
+        const breakAt=lastFitBottom>0?lastFitBottom:elTop;
+        breaks.push(elTop);
+        pageEnd=elTop+contentH;
+        lastFitBottom=elBot;
+      } else {
+        lastFitBottom=elBot;
       }
     }
     document.body.removeChild(m);
@@ -1641,8 +1650,9 @@ function renderEditor(s){
       card.appendChild(content);
 
       // White mask over bottom margin — hides any content that bleeds past contentH
+      // Bottom mask — covers from contentH to bottom of card, plus a small buffer for sub-pixel rendering
       const bottomMask=document.createElement("div");
-      bottomMask.style.cssText=`position:absolute;left:0;right:0;bottom:0;height:${pbPx}px;background:${pageBg};z-index:2`;
+      bottomMask.style.cssText=`position:absolute;left:0;right:0;bottom:0;height:${pbPx+2}px;background:${pageBg};z-index:2`;
       card.appendChild(bottomMask);
       // White mask over top margin
       const topMask=document.createElement("div");
