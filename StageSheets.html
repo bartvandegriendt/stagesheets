@@ -624,6 +624,7 @@ function renderSplitsHTML(scenes){
   </div>`).join("");
 }
 const CHANGELOG=[
+  {v:"v3.7.0",msg:"Fix duplicate line at page break: clip mask at next page start, not contentH"},
   {v:"v3.7.0",msg:"Fix duplicate line at page break — break before straddling element, add bottom mask buffer"},
   {v:"v3.6.9",msg:"Remove background graphics toast — no longer needed with @page margin:0"},
   {v:"v3.6.8",msg:"Restore @page margin:0; fix CHANGELOG version labels corrupted by sed"},
@@ -1587,27 +1588,20 @@ function renderEditor(s){
     m.innerHTML=_previewHTML;
     document.body.appendChild(m);
 
-    // Collect the offsetTop of each child so we know where page breaks fall
-    const breaks=[0]; // y positions where each page starts (in content-area coords)
+    // Collect page break positions (where each page's content starts in content-area coords)
+    const breaks=[0];
     let pageEnd=contentH;
-    let lastFitBottom=0;
     for(const el of m.children){
       const elTop=el.offsetTop;
       const elBot=elTop+el.offsetHeight;
       if(elTop>=pageEnd){
-        // element starts on or after end of current page — start new page at this element
+        // starts after current page ends — new page here
         breaks.push(elTop);
         pageEnd=elTop+contentH;
-        lastFitBottom=elBot;
       } else if(elBot>pageEnd){
-        // element straddles boundary — break BEFORE this element
-        // use lastFitBottom as the break so no content from current page bleeds through
-        const breakAt=lastFitBottom>0?lastFitBottom:elTop;
+        // straddles the boundary — push this element to next page
         breaks.push(elTop);
         pageEnd=elTop+contentH;
-        lastFitBottom=elBot;
-      } else {
-        lastFitBottom=elBot;
       }
     }
     document.body.removeChild(m);
@@ -1649,15 +1643,17 @@ function renderEditor(s){
       content.innerHTML=_previewHTML;
       card.appendChild(content);
 
-      // White mask over bottom margin — hides any content that bleeds past contentH
-      // Bottom mask — covers from contentH to bottom of card, plus a small buffer for sub-pixel rendering
-      const bottomMask=document.createElement("div");
-      bottomMask.style.cssText=`position:absolute;left:0;right:0;bottom:0;height:${pbPx+2}px;background:${pageBg};z-index:2`;
-      card.appendChild(bottomMask);
-      // White mask over top margin
+      // Top mask — hides content above the top margin
       const topMask=document.createElement("div");
       topMask.style.cssText=`position:absolute;left:0;right:0;top:0;height:${ptPx}px;background:${pageBg};z-index:2`;
       card.appendChild(topMask);
+      // Bottom mask — clips exactly where the next page starts (or contentH for last page)
+      // This prevents any straddling element from showing on both pages
+      const nextBreak=breaks[pi+1];
+      const clipFrom=ptPx+(nextBreak!==undefined?nextBreak-breakY:contentH);
+      const bottomMask=document.createElement("div");
+      bottomMask.style.cssText=`position:absolute;left:0;right:0;top:${clipFrom}px;bottom:-2px;background:${pageBg};z-index:2`;
+      card.appendChild(bottomMask);
 
       if(pi>0){
         const lbl=document.createElement("div");
