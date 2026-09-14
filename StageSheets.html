@@ -334,7 +334,7 @@
 <div class="top">
   <div>
     <div class="brand"><span class="dot"></span>STAGE SHEETS</div>
-    <div class="sub">songs &amp; setlists <span style="font-family:'JetBrains Mono';font-size:9px;opacity:.45;letter-spacing:.04em">v3.6.8</span> <button id="changelogBtn" title="What's new" style="background:none;border:1px solid rgba(255,255,255,.15);border-radius:50%;width:14px;height:14px;color:var(--muted);cursor:pointer;font-size:8px;font-weight:700;line-height:1;padding:0;vertical-align:middle;margin-left:3px">i</button></div>
+    <div class="sub">songs &amp; setlists <span style="font-family:'JetBrains Mono';font-size:9px;opacity:.45;letter-spacing:.04em">v3.6.9</span> <button id="changelogBtn" title="What's new" style="background:none;border:1px solid rgba(255,255,255,.15);border-radius:50%;width:14px;height:14px;color:var(--muted);cursor:pointer;font-size:8px;font-weight:700;line-height:1;padding:0;vertical-align:middle;margin-left:3px">i</button></div>
   </div>
   <div class="spacer"></div>
   <input type="file" id="importFile" accept=".json" style="display:none">
@@ -614,15 +614,6 @@ function migrateSong(s){
   return s;
 }
 function activeScene(s){return s.scenes[s.activeScene||0]||s.scenes[0];}
-function showBgGraphicsToast(){
-  const existing=$("bgGraphicsToast"); if(existing) return;
-  const t=document.createElement("div");
-  t.id="bgGraphicsToast";
-  t.style.cssText="position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1a1408;border:1px solid var(--amber-dim);border-radius:10px;padding:10px 16px;z-index:9000;font-family:'Barlow';font-size:13px;color:var(--amber);box-shadow:0 4px 20px rgba(0,0,0,.7);white-space:nowrap;pointer-events:none";
-  t.innerHTML="💡 In the print dialog, enable <b>Background graphics</b> for the dark theme to print correctly";
-  document.body.appendChild(t);
-  setTimeout(()=>t.remove(), 8000);
-}
 function renderSplitsHTML(scenes){
   if(!scenes||!scenes.length) return "";
   const valid=scenes.filter(sc=>sc.splits.some(sp=>sp.from&&sp.to&&validNote(sp.from)&&validNote(sp.to)));
@@ -633,26 +624,28 @@ function renderSplitsHTML(scenes){
   </div>`).join("");
 }
 const CHANGELOG=[
-  {v:"v3.6.8",msg:"Collapsible split entry rows — keyboard SVG always visible, rows toggle with ▲/▼. Also added collapsible Key/Capo/Tempo row."},
-  {v:"v3.6.8",msg:"Collapsible Key / Capo / Tempo / Find chords row in editor — toggle with ▼ button, persisted to data file"},
-  {v:"v3.6.8",msg:"Fix keyboard split label centering and range text clipping below keyboard"},
-  {v:"v3.6.8",msg:"Tab title shows 'Stage Sheets – Song – Artist' in edit view, updates live, restores correctly after printing. Changelog modal with info button."},
-  {v:"v3.6.8",msg:"Keyboard splits: individual key colouring per split, opacity slider with live preview"},
-  {v:"v3.6.8",msg:"MIDI Learn for keyboard splits — press Learn then play two keys to set the split range"},
-  {v:"v3.6.8",msg:"Keyboard splits: map instruments to key ranges, visual SVG keyboard strip in editor and perform view"},
-  {v:"v3.6.8",msg:"Page preview: mask top/bottom margins to prevent text bleed-through between pages"},
-  {v:"v3.6.8",msg:"Page preview: fix overlapping text with scroll-clip multi-page approach"},
-  {v:"v3.6.8",msg:"Page preview: keep title/artist/rule header together, fix page split element positioning"},
-  {v:"v3.6.8",msg:"Page preview: element-aware page splitting so no line is clipped mid-character"},
-  {v:"v3.6.8",msg:"Word-style multi-page preview with discrete page cards and grey desk background"},
-  {v:"v3.6.8",msg:"Individual top/right/bottom/left margin controls with preset buttons (None/Narrow/Normal/Wide)"},
-  {v:"v3.6.8",msg:"Fix submenu positioning (flips upward near screen edge), add New song in folder to right-click menu"},
-  {v:"v3.6.8",msg:"Fix mobile sidebar: remove overlay that was permanently dimming the song list on iOS"},
-  {v:"v3.6.8",msg:"Preserve sidebar scroll position when opening a song from the list"},
-  {v:"v3.6.8",msg:"Fix transpose in edit mode (no longer re-renders editor), fix screenshots in README"},
-  {v:"v3.6.8",msg:"Fix resizer drag using delta-based approach with full-screen overlay"},
-  {v:"v3.6.8",msg:"Resizer drag: use pointer capture for reliable cross-browser tracking"},
-  {v:"v3.6.8",msg:"Strip lyrics respects selection; Reflow chords (N per line); search clear button; default view toggle; save stays in current view"},
+  {v:"v3.6.9",msg:"Remove background graphics toast — no longer needed with @page margin:0"},
+  {v:"v3.6.8",msg:"Restore @page margin:0; fix CHANGELOG version labels corrupted by sed"},
+  {v:"v3.6.8",msg:"Restore @page margin:0 so dark background prints edge-to-edge without white border — sheet padding handles all margin spacing in mm"},
+  {v:"v3.6.7",msg:"Add 'Background graphics' reminder toast when printing in dark theme"},
+  {v:"v3.6.6",msg:"Fix white margin border: set --page-bg on :root so html/body background matches print theme"},
+  {v:"v3.6.5",msg:"Fix @page margins to match preview pane — separate margin from text padding in print CSS"},
+  {v:"v3.6.4",msg:"Auto-reconnect JSON file on page load; banner fallback if permission needs re-granting"},
+  {v:"v3.6.3",msg:"Restore collapsed folder state on page refresh (was missing from init load block)"},
+  {v:"v3.6.2",msg:"Fix page height so bottom margin is visible in perform view; print uses height:auto"},
+  {v:"v3.6.1",msg:"Fix new song in folder: expand folder, add scenes data, open edit view correctly"},
+  {v:"v3.6.0",msg:"File dropdown menu in top bar; remove Sets tab; persist folder collapsed state; save keeps scroll position; resizer replaced with preview toggle"},
+  {v:"v3.5.3",msg:"Fix white border in dark PDF; active state on margin preset buttons"},
+  {v:"v3.5.2",msg:"Move page background from .sheet to .page-wrap so dark colour fills full card edge to edge"},
+  {v:"v3.5.1",msg:"Fix clipPath ID clash between scenes causing label cutoff in keyboard strip"},
+  {v:"v3.5.0",msg:"Per-scene keyboard splits — up to 8 scenes per song, each with independent splits; migration from old splits format"},
+  {v:"v3.4.6",msg:"Collapsible split entry rows — keyboard SVG always visible, rows toggle with ▲/▼"},
+  {v:"v3.4.5",msg:"Collapsible Key / Capo / Tempo / Find chords row in editor — toggle with ▼ button, persisted"},
+  {v:"v3.4.4",msg:"Fix keyboard split label centering and range text clipping below keyboard"},
+  {v:"v3.4.3",msg:"Tab title shows Stage Sheets – Song – Artist in edit view; changelog modal with info button"},
+  {v:"v3.4.2",msg:"Keyboard splits: individual key colouring per split, opacity slider with live preview"},
+  {v:"v3.4.1",msg:"MIDI Learn for keyboard splits — press Learn then play two keys to set the range"},
+  {v:"v3.4.0",msg:"Keyboard splits: map instruments to key ranges, visual SVG keyboard strip in editor and perform view"},
 ];
 function showChangelog(){
   if($("clModal")) return;
@@ -1480,7 +1473,6 @@ function renderEditor(s){
         <div class="field" style="flex-direction:row;align-items:center;gap:14px;padding:8px 12px;background:var(--bg);border:1px solid var(--line);border-radius:9px">
           <span style="font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);white-space:nowrap">Print theme</span>
           <div class="seg"><button id="ptLight" class="${printTheme==="light"?"on":""}">☀ Light</button><button id="ptDark" class="${printTheme==="dark"?"on":""}">☾ Dark</button></div>
-          ${printTheme==="dark"?`<span style="font-size:11px;color:var(--amber-dim)">Enable <b>Background graphics</b> in print dialog</span>`:""}
         </div>
         <div class="field" style="flex-direction:column;gap:8px;padding:8px 12px;background:var(--bg);border:1px solid var(--line);border-radius:9px">
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
@@ -2064,8 +2056,6 @@ function wireToolbar(s){
   set("trDown",()=>setTranspose(transpose-1)); set("trUp",()=>setTranspose(transpose+1)); set("trFlat",()=>{flats=!flats;renderMain();});
   set("szDown",()=>{sheetSize=Math.max(11,sheetSize-1);renderMain();}); set("szUp",()=>{sheetSize=Math.min(42,sheetSize+1);renderMain();});
   set("printBtn",()=>{
-    // Remind about background graphics when using dark print theme
-    if(printTheme==="dark") showBgGraphicsToast();
     if(view==="edit"){
       view="perform"; renderMain();
       applyPrintTheme();
